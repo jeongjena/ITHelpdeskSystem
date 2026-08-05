@@ -11,6 +11,7 @@
         public TicketStatus Status { get; set; }
         public string? AssignedTechnician { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? TriagedAt { get; set; }
         public DateTime? ResolvedAt { get; set; }
 
     }

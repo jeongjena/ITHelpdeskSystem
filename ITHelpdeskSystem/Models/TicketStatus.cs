@@ -5,6 +5,5 @@
         Open,
         InProgress,
         Resolved,
-        Closed
     }
 }

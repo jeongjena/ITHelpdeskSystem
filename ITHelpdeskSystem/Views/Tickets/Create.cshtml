@@ -1,0 +1,71 @@
+﻿@model ITHelpdeskSystem.Models.Ticket
+
+@{
+    ViewData["Title"] = "Submit IT Support Ticket";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h1 class="mb-3">Submit IT Support Ticket</h1>
+
+        <p class="text-muted">
+            Enter the details of your IT issue below.
+        </p>
+
+        <!-- Sends the completed form to the POST Create action. -->
+        <form asp-action="Create" method="post">
+
+            <!-- Displays model-level validation errors. -->
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger"></div>
+
+            <!-- Requester information -->
+            <div class="mb-3">
+                <label asp-for="RequesterName"
+                       class="form-label"></label>
+                <input asp-for="RequesterName"
+                       class="form-control" />
+                <span asp-validation-for="RequesterName"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="RequesterEmail"
+                       class="form-label"></label>
+                <input asp-for="RequesterEmail"
+                       class="form-control" />
+                <span asp-validation-for="RequesterEmail"
+                      class="text-danger"></span>
+            </div>
+
+            <!-- IT issue information -->
+            <div class="mb-3">
+                <label asp-for="Title"
+                       class="form-label"></label>
+                <input asp-for="Title"
+                       class="form-control" />
+                <span asp-validation-for="Title"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description"
+                       class="form-label"></label>
+                <textarea asp-for="Description"
+                          class="form-control"
+                          rows="5"></textarea>
+                <span asp-validation-for="Description"
+                      class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Submit Ticket
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Enables client-side validation using the model rules. -->
+    <partial name="_ValidationScriptsPartial" />
+}

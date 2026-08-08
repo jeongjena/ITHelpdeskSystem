@@ -1,0 +1,24 @@
+﻿@model ITHelpdeskSystem.Models.Ticket
+
+@{
+    ViewData["Title"] = "Ticket Submitted";
+}
+
+<!-- Displays confirmation and the database-generated ticket ID. -->
+<div class="alert alert-success">
+    <h1 class="h4">Ticket submitted successfully</h1>
+
+    <p class="mb-1">
+        Your ticket ID is <strong>#@Model.Id</strong>.
+    </p>
+
+    <p class="mb-0">
+        Current status: <strong>@Model.Status</strong>
+    </p>
+</div>
+
+<a asp-controller="Tickets"
+   asp-action="Create"
+   class="btn btn-primary">
+    Submit Another Ticket
+</a>

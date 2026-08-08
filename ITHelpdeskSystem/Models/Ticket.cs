@@ -20,11 +20,11 @@ namespace ITHelpdeskSystem.Models
         public string RequesterEmail { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Title is required.")]
-        [StringLength(150)]
+        [StringLength(200)]
         public string Title { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Description is required.")]
-        [StringLength(1000)]
+        [StringLength(2000)]
         public string Description { get; set; } = string.Empty;
 
         // Priority remains unassigned until an Admin completes triage.

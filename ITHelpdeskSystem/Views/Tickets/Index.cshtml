@@ -1,0 +1,62 @@
+﻿@model IEnumerable<ITHelpdeskSystem.Models.Ticket>
+
+@{
+    ViewData["Title"] = "Ticket Management";
+}
+
+<h1>Ticket Management</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Requester</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Technician</th>
+            <th>Created</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var ticket in Model)
+        {
+            <tr>
+                <td>#@ticket.Id</td>
+
+                <td>@ticket.Title</td>
+
+                <td>@ticket.RequesterName</td>
+
+                <td>@ticket.Priority</td>
+
+                <td>@ticket.Status</td>
+
+                <td>
+                    @(ticket.AssignedTechnician ?? "Unassigned")
+                </td>
+
+                <td>
+                    @ticket.CreatedAt.ToLocalTime()
+                </td>
+
+                <td>
+                    @if (ticket.Status == ITHelpdeskSystem.Models.TicketStatus.Open)
+                    {
+                        <a asp-action="Triage"
+                           asp-route-id="@ticket.Id"
+                           class="btn btn-sm btn-primary">
+                            Triage
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Triaged</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

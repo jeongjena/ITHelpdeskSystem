@@ -1,6 +1,7 @@
 ﻿using ITHelpdeskSystem.Data;
 using ITHelpdeskSystem.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ITHelpdeskSystem.Controllers
 {
@@ -59,5 +60,84 @@ namespace ITHelpdeskSystem.Controllers
 
             return View(ticket);
         }
+
+        // Displays all submitted tickets.
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var tickets = await _context.Tickets
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
+            return View(tickets);
+        }
+
+        // Displays the selected ticket for triage.
+        [HttpGet]
+        public async Task<IActionResult> Triage(int id)
+        {
+            var ticket = await _context.Tickets.FindAsync(id);
+
+            if (ticket == null)
+            {
+                return NotFound();
+            }
+
+            // Only Open tickets can be triaged.
+            if (ticket.Status != TicketStatus.Open)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(ticket);
+        }
+
+        // Processes the completed ticket triage.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Triage(
+            int id,
+            TicketPriority priority,
+            string? assignedTechnician)
+        {
+            var ticket = await _context.Tickets.FindAsync(id);
+
+            if (ticket == null)
+            {
+                return NotFound();
+            }
+
+            // A ticket cannot complete triage without a priority.
+            if (priority == TicketPriority.Unassigned)
+            {
+                ModelState.AddModelError(
+                    "Priority",
+                    "Please select a priority.");
+            }
+
+            // A technician must be assigned before triage can be completed.
+            if (string.IsNullOrWhiteSpace(assignedTechnician))
+            {
+                ModelState.AddModelError(
+                    "AssignedTechnician",
+                    "Please assign a technician.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(ticket);
+            }
+
+            // Complete the triage workflow.
+            ticket.Priority = priority;
+            ticket.AssignedTechnician = assignedTechnician.Trim();
+            ticket.TriagedAt = DateTime.UtcNow;
+            ticket.Status = TicketStatus.InProgress;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

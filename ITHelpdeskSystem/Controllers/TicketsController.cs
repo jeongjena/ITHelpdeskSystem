@@ -153,5 +153,53 @@ namespace ITHelpdeskSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // Displays the selected ticket for resolution.
+        [HttpGet]
+        public async Task<IActionResult> Resolve(int id)
+        {
+            var ticket = await _context.Tickets.FindAsync(id);
+
+            if (ticket == null)
+            {
+                return NotFound();
+            }
+
+            // Only InProgress tickets can be resolved.
+            if (ticket.Status != TicketStatus.InProgress)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(ticket);
+        }
+
+        // Processes the completed ticket resolution.
+        [HttpPost]
+        [ActionName("Resolve")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResolveConfirmed(int id)
+        {
+            var ticket = await _context.Tickets.FindAsync(id);
+
+            if (ticket == null)
+            {
+                return NotFound();
+            }
+
+            // Only InProgress tickets can be resolved.
+            if (ticket.Status != TicketStatus.InProgress)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Complete the resolution workflow.
+            ticket.Status = TicketStatus.Resolved;
+            ticket.ResolvedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

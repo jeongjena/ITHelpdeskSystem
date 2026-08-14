@@ -1,0 +1,30 @@
+﻿@model ITHelpdeskSystem.Models.Ticket
+
+@{
+    ViewData["Title"] = "Resolve Ticket";
+}
+
+<h1>Resolve Ticket #@Model.Id</h1>
+
+<h4>@Model.Title</h4>
+
+<p><strong>Requester:</strong> @Model.RequesterName (@Model.RequesterEmail)</p>
+<p><strong>Description:</strong></p>
+<p>@Model.Description</p>
+
+<p><strong>Priority:</strong> @Model.Priority</p>
+<p><strong>Assigned Technician:</strong> @Model.AssignedTechnician</p>
+<p><strong>Current Status:</strong> @Model.Status</p>
+
+<hr />
+
+<h3>Confirm Resolution</h3>
+
+<form asp-action="Resolve" asp-route-id="@Model.Id" method="post">
+    @Html.AntiForgeryToken()
+
+    <p>Marking this ticket as resolved will record the current time as the resolution timestamp.</p>
+
+    <button type="submit" class="btn btn-success">Mark as Resolved</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

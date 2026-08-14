@@ -41,7 +41,6 @@
                 <td>
                     @ticket.CreatedAt.ToLocalTime()
                 </td>
-
                 <td>
                     <a asp-action="Details"
                        asp-route-id="@ticket.Id"
@@ -57,9 +56,17 @@
                             Triage
                         </a>
                     }
+                    else if (ticket.Status == ITHelpdeskSystem.Models.TicketStatus.InProgress)
+                    {
+                        <a asp-action="Resolve"
+                           asp-route-id="@ticket.Id"
+                           class="btn btn-sm btn-success">
+                            Resolve
+                        </a>
+                    }
                     else
                     {
-                        <span class="text-muted">Triaged</span>
+                        <span class="text-muted">Resolved</span>
                     }
                 </td>
             </tr>

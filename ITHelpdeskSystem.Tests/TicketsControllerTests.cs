@@ -171,6 +171,29 @@ namespace ITHelpdeskSystem.Tests
             Assert.IsNotNull(tickets);
             Assert.AreEqual(2, tickets.Count);
         }
+        [TestMethod]
+        public async Task Details_ExistingTicket_ShouldReturnView()
+        {
+            var ticket = await AddOpenTicket();
+
+            var result = await _controller.Details(ticket.Id);
+
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+
+            var view = (ViewResult)result;
+            var model = view.Model as Ticket;
+
+            Assert.IsNotNull(model);
+            Assert.AreEqual(ticket.Id, model.Id);
+        }
+
+        [TestMethod]
+        public async Task Details_UnknownTicket_ShouldReturnNotFound()
+        {
+            var result = await _controller.Details(999);
+
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
 
         [TestMethod]
         public async Task Triage_GetOpenTicket_ShouldReturnView()
@@ -313,6 +336,157 @@ namespace ITHelpdeskSystem.Tests
             Assert.IsInstanceOfType(result, typeof(ViewResult));
         }
 
+        [TestMethod]
+        public async Task Resolve_GetInProgressTicket_ShouldReturnView()
+        {
+            var ticket = await AddInProgressTicket();
+
+            var result = await _controller.Resolve(ticket.Id);
+
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+        }
+
+        [TestMethod]
+        public async Task Resolve_GetOpenTicket_ShouldRedirectToIndex()
+        {
+            var ticket = await AddOpenTicket();
+
+            var result = await _controller.Resolve(ticket.Id);
+
+            Assert.IsInstanceOfType(
+                result,
+                typeof(RedirectToActionResult));
+
+            var redirect = (RedirectToActionResult)result;
+
+            Assert.AreEqual("Index", redirect.ActionName);
+        }
+
+        [TestMethod]
+        public async Task Resolve_GetAlreadyResolvedTicket_ShouldRedirectToIndex()
+        {
+            var ticket = await AddResolvedTicket();
+
+            var result = await _controller.Resolve(ticket.Id);
+
+            Assert.IsInstanceOfType(
+                result,
+                typeof(RedirectToActionResult));
+
+            var redirect = (RedirectToActionResult)result;
+
+            Assert.AreEqual("Index", redirect.ActionName);
+        }
+
+        [TestMethod]
+        public async Task Resolve_GetUnknownTicket_ShouldReturnNotFound()
+        {
+            var result = await _controller.Resolve(999);
+
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public async Task ResolveConfirmed_InProgressTicket_ShouldUpdateTicket()
+        {
+            var ticket = await AddInProgressTicket();
+
+            var result = await _controller.ResolveConfirmed(ticket.Id);
+
+            var updatedTicket =
+                await _context.Tickets.FindAsync(ticket.Id);
+
+            Assert.IsNotNull(updatedTicket);
+
+            Assert.AreEqual(
+                TicketStatus.Resolved,
+                updatedTicket.Status);
+
+            Assert.IsNotNull(updatedTicket.ResolvedAt);
+
+            Assert.IsInstanceOfType(
+                result,
+                typeof(RedirectToActionResult));
+
+            var redirect = (RedirectToActionResult)result;
+
+            Assert.AreEqual("Index", redirect.ActionName);
+        }
+
+        [TestMethod]
+        public async Task ResolveConfirmed_InProgressTicket_ShouldRecordResolvedAt()
+        {
+            var ticket = await AddInProgressTicket();
+
+            var beforeResolve = DateTime.UtcNow;
+
+            await _controller.ResolveConfirmed(ticket.Id);
+
+            var afterResolve = DateTime.UtcNow;
+
+            var updatedTicket =
+                await _context.Tickets.FindAsync(ticket.Id);
+
+            Assert.IsNotNull(updatedTicket);
+            Assert.IsNotNull(updatedTicket.ResolvedAt);
+
+            Assert.IsTrue(
+                updatedTicket.ResolvedAt >= beforeResolve);
+
+            Assert.IsTrue(
+                updatedTicket.ResolvedAt <= afterResolve);
+        }
+
+        [TestMethod]
+        public async Task ResolveConfirmed_OpenTicket_ShouldNotUpdateTicket()
+        {
+            var ticket = await AddOpenTicket();
+
+            var result = await _controller.ResolveConfirmed(ticket.Id);
+
+            var updatedTicket =
+                await _context.Tickets.FindAsync(ticket.Id);
+
+            Assert.IsNotNull(updatedTicket);
+
+            // The ticket must remain Open; only InProgress tickets can be resolved.
+            Assert.AreEqual(
+                TicketStatus.Open,
+                updatedTicket.Status);
+
+            Assert.IsNull(updatedTicket.ResolvedAt);
+
+            Assert.IsInstanceOfType(
+                result,
+                typeof(RedirectToActionResult));
+        }
+
+        [TestMethod]
+        public async Task ResolveConfirmed_AlreadyResolvedTicket_ShouldNotChangeResolvedAt()
+        {
+            var ticket = await AddResolvedTicket();
+            var originalResolvedAt = ticket.ResolvedAt;
+
+            await _controller.ResolveConfirmed(ticket.Id);
+
+            var updatedTicket =
+                await _context.Tickets.FindAsync(ticket.Id);
+
+            Assert.IsNotNull(updatedTicket);
+
+            // Resolving an already-resolved ticket should not overwrite the original timestamp.
+            Assert.AreEqual(
+                originalResolvedAt,
+                updatedTicket.ResolvedAt);
+        }
+
+        [TestMethod]
+        public async Task ResolveConfirmed_UnknownTicket_ShouldReturnNotFound()
+        {
+            var result = await _controller.ResolveConfirmed(999);
+
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
         private static Ticket CreateValidTicket()
         {
             return new Ticket
@@ -334,6 +508,40 @@ namespace ITHelpdeskSystem.Tests
             ticket.CreatedAt = DateTime.UtcNow;
             ticket.TriagedAt = null;
             ticket.ResolvedAt = null;
+
+            _context.Tickets.Add(ticket);
+            await _context.SaveChangesAsync();
+
+            return ticket;
+        }
+
+        private async Task<Ticket> AddInProgressTicket()
+        {
+            var ticket = CreateValidTicket();
+
+            ticket.Priority = TicketPriority.High;
+            ticket.Status = TicketStatus.InProgress;
+            ticket.AssignedTechnician = "Alex";
+            ticket.CreatedAt = DateTime.UtcNow;
+            ticket.TriagedAt = DateTime.UtcNow;
+            ticket.ResolvedAt = null;
+
+            _context.Tickets.Add(ticket);
+            await _context.SaveChangesAsync();
+
+            return ticket;
+        }
+
+        private async Task<Ticket> AddResolvedTicket()
+        {
+            var ticket = CreateValidTicket();
+
+            ticket.Priority = TicketPriority.High;
+            ticket.Status = TicketStatus.Resolved;
+            ticket.AssignedTechnician = "Alex";
+            ticket.CreatedAt = DateTime.UtcNow;
+            ticket.TriagedAt = DateTime.UtcNow;
+            ticket.ResolvedAt = DateTime.UtcNow;
 
             _context.Tickets.Add(ticket);
             await _context.SaveChangesAsync();

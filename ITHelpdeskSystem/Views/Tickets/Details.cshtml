@@ -1,0 +1,44 @@
+﻿@model ITHelpdeskSystem.Models.Ticket
+
+@{
+    ViewData["Title"] = "Ticket Details";
+}
+
+<h1>Ticket Details</h1>
+
+<h4>#@Model.Id - @Model.Title</h4>
+
+<dl class="row">
+    <dt class="col-sm-3">Requester Name</dt>
+    <dd class="col-sm-9">@Model.RequesterName</dd>
+
+    <dt class="col-sm-3">Requester Email</dt>
+    <dd class="col-sm-9">@Model.RequesterEmail</dd>
+
+    <dt class="col-sm-3">Description</dt>
+    <dd class="col-sm-9">@Model.Description</dd>
+
+    <dt class="col-sm-3">Priority</dt>
+    <dd class="col-sm-9">@Model.Priority</dd>
+
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9">@Model.Status</dd>
+
+    <dt class="col-sm-3">Assigned Technician</dt>
+    <dd class="col-sm-9">@(Model.AssignedTechnician ?? "Unassigned")</dd>
+
+    <dt class="col-sm-3">Created At</dt>
+    <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime()</dd>
+
+    <dt class="col-sm-3">Triaged At</dt>
+    <dd class="col-sm-9">
+        @(Model.TriagedAt.HasValue ? Model.TriagedAt.Value.ToLocalTime().ToString() : "Not yet triaged")
+    </dd>
+
+    <dt class="col-sm-3">Resolved At</dt>
+    <dd class="col-sm-9">
+        @(Model.ResolvedAt.HasValue ? Model.ResolvedAt.Value.ToLocalTime().ToString() : "Not yet resolved")
+    </dd>
+</dl>
+
+<a asp-action="Index" class="btn btn-secondary">Back to Ticket Management</a>

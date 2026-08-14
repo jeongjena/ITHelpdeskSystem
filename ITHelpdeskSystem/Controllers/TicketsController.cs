@@ -61,6 +61,20 @@ namespace ITHelpdeskSystem.Controllers
             return View(ticket);
         }
 
+        // Displays full read-only details for a single ticket, regardless of status.
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var ticket = await _context.Tickets.FindAsync(id);
+
+            if (ticket == null)
+            {
+                return NotFound();
+            }
+
+            return View(ticket);
+        }
+
         // Displays all submitted tickets.
         [HttpGet]
         public async Task<IActionResult> Index()

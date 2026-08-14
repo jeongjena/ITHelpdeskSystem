@@ -43,6 +43,12 @@
                 </td>
 
                 <td>
+                    <a asp-action="Details"
+                       asp-route-id="@ticket.Id"
+                       class="btn btn-sm btn-secondary">
+                        Details
+                    </a>
+
                     @if (ticket.Status == ITHelpdeskSystem.Models.TicketStatus.Open)
                     {
                         <a asp-action="Triage"

@@ -121,6 +121,12 @@ namespace ITHelpdeskSystem.Controllers
                 return NotFound();
             }
 
+            // Only Open tickets can complete triage.
+            if (ticket.Status != TicketStatus.Open)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
             // A ticket cannot complete triage without a priority.
             if (priority == TicketPriority.Unassigned)
             {

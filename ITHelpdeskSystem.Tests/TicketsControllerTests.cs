@@ -337,6 +337,34 @@ namespace ITHelpdeskSystem.Tests
         }
 
         [TestMethod]
+        public async Task Triage_PostNonOpenTicket_ShouldNotUpdateTicket()
+        {
+            var ticket = await AddInProgressTicket();
+            var originalTriagedAt = ticket.TriagedAt;
+
+            var result = await _controller.Triage(
+                ticket.Id,
+                TicketPriority.Low,
+                "Bob");
+
+            var updatedTicket =
+                await _context.Tickets.FindAsync(ticket.Id);
+
+            Assert.IsNotNull(updatedTicket);
+            Assert.AreEqual(TicketPriority.High, updatedTicket.Priority);
+            Assert.AreEqual("Alex", updatedTicket.AssignedTechnician);
+            Assert.AreEqual(originalTriagedAt, updatedTicket.TriagedAt);
+
+            Assert.IsInstanceOfType(
+                result,
+                typeof(RedirectToActionResult));
+
+            var redirect = (RedirectToActionResult)result;
+
+            Assert.AreEqual("Index", redirect.ActionName);
+        }
+
+        [TestMethod]
         public async Task Resolve_GetInProgressTicket_ShouldReturnView()
         {
             var ticket = await AddInProgressTicket();

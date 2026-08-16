@@ -1,5 +1,7 @@
 ﻿using ITHelpdeskSystem.Data;
 using ITHelpdeskSystem.Models;
+using ITHelpdeskSystem.Services;
+using ITHelpdeskSystem.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,11 +10,15 @@ namespace ITHelpdeskSystem.Controllers
     public class TicketsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly SlaService _slaService;
 
         // Receives the database connection provided by the system.
-        public TicketsController(ApplicationDbContext context)
+        public TicketsController(
+            ApplicationDbContext context,
+            SlaService slaService)
         {
             _context = context;
+            _slaService = slaService;
         }
 
         // Displays the empty ticket submission form.
@@ -72,7 +78,39 @@ namespace ITHelpdeskSystem.Controllers
                 return NotFound();
             }
 
-            return View(ticket);
+            var currentTime = DateTime.UtcNow;
+
+            var viewModel = new TicketDetailsViewModel
+            {
+                Ticket = ticket,
+
+                TriageDueAt = _slaService.CalculateDueDateFromUtc(
+                    ticket.CreatedAt,
+                    2),
+
+                TriageSlaStatus = _slaService.GetTriageSlaStatus(
+                    ticket,
+                    currentTime),
+
+                ResolutionSlaStatus = _slaService.GetResolutionSlaStatus(
+                    ticket,
+                    currentTime)
+            };
+
+            if (ticket.TriagedAt.HasValue &&
+                ticket.Priority != TicketPriority.Unassigned)
+            {
+                var resolutionHours =
+                    _slaService.GetResolutionTargetHours(
+                        ticket.Priority);
+
+                viewModel.ResolutionDueAt =
+                    _slaService.CalculateDueDateFromUtc(
+                        ticket.TriagedAt.Value,
+                        resolutionHours);
+            }
+
+            return View(viewModel);
         }
 
         // Displays all submitted tickets.
@@ -150,7 +188,7 @@ namespace ITHelpdeskSystem.Controllers
 
             // Complete the triage workflow.
             ticket.Priority = priority;
-            ticket.AssignedTechnician = assignedTechnician.Trim();
+            ticket.AssignedTechnician = assignedTechnician!.Trim();
             ticket.TriagedAt = DateTime.UtcNow;
             ticket.Status = TicketStatus.InProgress;
 

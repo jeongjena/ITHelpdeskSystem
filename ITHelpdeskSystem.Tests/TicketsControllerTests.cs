@@ -1,6 +1,8 @@
 ﻿using ITHelpdeskSystem.Controllers;
 using ITHelpdeskSystem.Data;
 using ITHelpdeskSystem.Models;
+using ITHelpdeskSystem.Services;
+using ITHelpdeskSystem.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +31,9 @@ namespace ITHelpdeskSystem.Tests
             _context = new ApplicationDbContext(options);
             _context.Database.EnsureCreated();
 
-            _controller = new TicketsController(_context);
+            _controller = new TicketsController(
+                _context,
+                new SlaService());
         }
 
         [TestCleanup]
@@ -171,8 +175,9 @@ namespace ITHelpdeskSystem.Tests
             Assert.IsNotNull(tickets);
             Assert.AreEqual(2, tickets.Count);
         }
+
         [TestMethod]
-        public async Task Details_ExistingTicket_ShouldReturnView()
+        public async Task Details_ExistingTicket_ShouldReturnViewModelWithSlaInformation()
         {
             var ticket = await AddOpenTicket();
 
@@ -181,10 +186,27 @@ namespace ITHelpdeskSystem.Tests
             Assert.IsInstanceOfType(result, typeof(ViewResult));
 
             var view = (ViewResult)result;
-            var model = view.Model as Ticket;
+            var model = view.Model as TicketDetailsViewModel;
 
             Assert.IsNotNull(model);
-            Assert.AreEqual(ticket.Id, model.Id);
+
+            Assert.AreEqual(
+                ticket.Id,
+                model.Ticket.Id);
+
+            Assert.AreNotEqual(
+                default(DateTime),
+                model.TriageDueAt);
+
+            Assert.IsFalse(
+                string.IsNullOrWhiteSpace(model.TriageSlaStatus));
+
+            Assert.IsNull(
+                model.ResolutionDueAt);
+
+            Assert.AreEqual(
+                "Not Started",
+                model.ResolutionSlaStatus);
         }
 
         [TestMethod]

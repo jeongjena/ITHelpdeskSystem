@@ -1,4 +1,4 @@
-﻿@model ITHelpdeskSystem.Models.Ticket
+﻿@model ITHelpdeskSystem.ViewModels.TicketDetailsViewModel
 
 @{
     ViewData["Title"] = "Ticket Details";
@@ -6,39 +6,83 @@
 
 <h1>Ticket Details</h1>
 
-<h4>#@Model.Id - @Model.Title</h4>
+<h4>#@Model.Ticket.Id - @Model.Ticket.Title</h4>
 
 <dl class="row">
     <dt class="col-sm-3">Requester Name</dt>
-    <dd class="col-sm-9">@Model.RequesterName</dd>
+    <dd class="col-sm-9">@Model.Ticket.RequesterName</dd>
 
     <dt class="col-sm-3">Requester Email</dt>
-    <dd class="col-sm-9">@Model.RequesterEmail</dd>
+    <dd class="col-sm-9">@Model.Ticket.RequesterEmail</dd>
 
     <dt class="col-sm-3">Description</dt>
-    <dd class="col-sm-9">@Model.Description</dd>
+    <dd class="col-sm-9">@Model.Ticket.Description</dd>
 
     <dt class="col-sm-3">Priority</dt>
-    <dd class="col-sm-9">@Model.Priority</dd>
+    <dd class="col-sm-9">@Model.Ticket.Priority</dd>
 
     <dt class="col-sm-3">Status</dt>
-    <dd class="col-sm-9">@Model.Status</dd>
+    <dd class="col-sm-9">@Model.Ticket.Status</dd>
 
     <dt class="col-sm-3">Assigned Technician</dt>
-    <dd class="col-sm-9">@(Model.AssignedTechnician ?? "Unassigned")</dd>
+    <dd class="col-sm-9">
+        @(Model.Ticket.AssignedTechnician ?? "Unassigned")
+    </dd>
 
     <dt class="col-sm-3">Created At</dt>
-    <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime()</dd>
+    <dd class="col-sm-9">
+        @Model.Ticket.CreatedAt.ToLocalTime()
+    </dd>
 
     <dt class="col-sm-3">Triaged At</dt>
     <dd class="col-sm-9">
-        @(Model.TriagedAt.HasValue ? Model.TriagedAt.Value.ToLocalTime().ToString() : "Not yet triaged")
+        @(Model.Ticket.TriagedAt.HasValue
+            ? Model.Ticket.TriagedAt.Value.ToLocalTime().ToString()
+            : "Not yet triaged")
     </dd>
 
     <dt class="col-sm-3">Resolved At</dt>
     <dd class="col-sm-9">
-        @(Model.ResolvedAt.HasValue ? Model.ResolvedAt.Value.ToLocalTime().ToString() : "Not yet resolved")
+        @(Model.Ticket.ResolvedAt.HasValue
+            ? Model.Ticket.ResolvedAt.Value.ToLocalTime().ToString()
+            : "Not yet resolved")
     </dd>
 </dl>
 
-<a asp-action="Index" class="btn btn-secondary">Back to Ticket Management</a>
+<hr />
+
+<h4>SLA Information</h4>
+
+<dl class="row">
+    <dt class="col-sm-3">Triage Due</dt>
+    <dd class="col-sm-9">
+        @Model.TriageDueAt
+    </dd>
+
+    <dt class="col-sm-3">Triage SLA</dt>
+    <dd class="col-sm-9">
+        @Model.TriageSlaStatus
+    </dd>
+
+    <dt class="col-sm-3">Resolution Due</dt>
+    <dd class="col-sm-9">
+        @if (Model.ResolutionDueAt.HasValue)
+        {
+            @Model.ResolutionDueAt.Value
+        }
+        else
+        {
+            <span>Not available until triage is completed</span>
+        }
+    </dd>
+
+    <dt class="col-sm-3">Resolution SLA</dt>
+    <dd class="col-sm-9">
+        @Model.ResolutionSlaStatus
+    </dd>
+</dl>
+
+<a asp-action="Index"
+   class="btn btn-secondary">
+    Back to Ticket Management
+</a>

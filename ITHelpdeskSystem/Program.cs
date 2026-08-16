@@ -1,4 +1,5 @@
 using ITHelpdeskSystem.Data;
+using ITHelpdeskSystem.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<SlaService>();
 
 var app = builder.Build();
 

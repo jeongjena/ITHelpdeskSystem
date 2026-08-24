@@ -5,6 +5,50 @@
 }
 
 <h1>Ticket Management</h1>
+<!-- Search and filter form for the ticket list. Uses GET so filters appear in the URL. -->
+<form asp-action="Index" method="get" class="row g-2 mb-3 align-items-end">
+    <div class="col-auto">
+        <label class="form-label">Search</label>
+        <!-- Matches against Ticket ID, Title, or Requester Name (handled in the controller) -->
+        <input type="text" name="searchTerm" value="@ViewData["SearchTerm"]"
+               class="form-control" placeholder="ID, Title, or Requester" />
+    </div>
+
+    <div class="col-auto">
+        <label class="form-label">Status</label>
+        <!-- "All" (empty value) means no status filter is applied -->
+        <select name="status" class="form-select">
+            <option value="">All</option>
+            @foreach (var s in Enum.GetValues<ITHelpdeskSystem.Models.TicketStatus>())
+            {
+                <option value="@s" selected="@(ViewData["StatusFilter"]?.ToString() == s.ToString())">
+                    @s
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="col-auto">
+        <label class="form-label">Priority</label>
+        <!-- "All" (empty value) means no priority filter is applied.
+             Note: Unassigned is a real, selectable priority value, not the same as "All". -->
+        <select name="priority" class="form-select">
+            <option value="">All</option>
+            @foreach (var p in Enum.GetValues<ITHelpdeskSystem.Models.TicketPriority>())
+            {
+                <option value="@p" selected="@(ViewData["PriorityFilter"]?.ToString() == p.ToString())">
+                    @p
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <!-- Clear resets by navigating back to Index with no query parameters -->
+        <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+    </div>
+</form>
 
 <table class="table table-striped">
     <thead>

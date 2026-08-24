@@ -114,12 +114,51 @@ namespace ITHelpdeskSystem.Controllers
         }
 
         // Displays all submitted tickets.
+        // Displays all submitted tickets, optionally filtered by search term, status, and priority.
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+    string? searchTerm = null,
+    TicketStatus? status = null,
+    TicketPriority? priority = null)
         {
-            var tickets = await _context.Tickets
+            var query = _context.Tickets.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim();
+
+                if (int.TryParse(term, out int ticketId))
+                {
+                    query = query.Where(t =>
+                        t.Id == ticketId ||
+                        t.Title.Contains(term) ||
+                        t.RequesterName.Contains(term));
+                }
+                else
+                {
+                    query = query.Where(t =>
+                        t.Title.Contains(term) ||
+                        t.RequesterName.Contains(term));
+                }
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(t => t.Status == status.Value);
+            }
+
+            if (priority.HasValue)
+            {
+                query = query.Where(t => t.Priority == priority.Value);
+            }
+
+            var tickets = await query
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
+
+            ViewData["SearchTerm"] = searchTerm;
+            ViewData["StatusFilter"] = status;
+            ViewData["PriorityFilter"] = priority;
 
             return View(tickets);
         }

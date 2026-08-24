@@ -175,6 +175,64 @@ namespace ITHelpdeskSystem.Tests
             Assert.IsNotNull(tickets);
             Assert.AreEqual(2, tickets.Count);
         }
+        [TestMethod]
+        public async Task Index_StatusFilter_ShouldReturnOnlyMatchingTickets()
+        {
+            await AddTicket("Printer offline", "Ben", TicketStatus.Open, TicketPriority.Unassigned, DateTime.UtcNow);
+            await AddTicket("VPN not connecting", "Cara", TicketStatus.InProgress, TicketPriority.Medium, DateTime.UtcNow);
+            await AddTicket("Monitor flickering", "Dev", TicketStatus.Resolved, TicketPriority.Low, DateTime.UtcNow);
+
+            var result = await _controller.Index(status: TicketStatus.InProgress);
+
+            var view = (ViewResult)result;
+            var tickets = view.Model as List<Ticket>;
+
+            Assert.IsNotNull(tickets);
+            Assert.AreEqual(1, tickets.Count);
+            Assert.AreEqual("VPN not connecting", tickets[0].Title);
+        }
+
+        [TestMethod]
+        public async Task Index_PriorityFilter_ShouldReturnOnlyMatchingTickets()
+        {
+            await AddTicket("Printer offline", "Ben", TicketStatus.InProgress, TicketPriority.Low, DateTime.UtcNow);
+            await AddTicket("VPN not connecting", "Cara", TicketStatus.InProgress, TicketPriority.High, DateTime.UtcNow);
+            await AddTicket("Monitor flickering", "Dev", TicketStatus.Resolved, TicketPriority.High, DateTime.UtcNow);
+
+            var result = await _controller.Index(priority: TicketPriority.High);
+
+            var view = (ViewResult)result;
+            var tickets = view.Model as List<Ticket>;
+
+            Assert.IsNotNull(tickets);
+            Assert.AreEqual(2, tickets.Count);
+            Assert.IsTrue(tickets.All(t => t.Priority == TicketPriority.High));
+        }
+
+        [TestMethod]
+        public async Task Index_SearchTerm_ShouldReturnMatchingTicketByTitleOrRequester()
+        {
+            await AddTicket("Printer offline", "Ben", TicketStatus.Open, TicketPriority.Unassigned, DateTime.UtcNow);
+            await AddTicket("VPN not connecting", "Cara", TicketStatus.InProgress, TicketPriority.Medium, DateTime.UtcNow);
+
+            // Search by title.
+            var titleResult = await _controller.Index(searchTerm: "VPN");
+            var titleView = (ViewResult)titleResult;
+            var titleTickets = titleView.Model as List<Ticket>;
+
+            Assert.IsNotNull(titleTickets);
+            Assert.AreEqual(1, titleTickets.Count);
+            Assert.AreEqual("Cara", titleTickets[0].RequesterName);
+
+            // Search by requester name.
+            var requesterResult = await _controller.Index(searchTerm: "Ben");
+            var requesterView = (ViewResult)requesterResult;
+            var requesterTickets = requesterView.Model as List<Ticket>;
+
+            Assert.IsNotNull(requesterTickets);
+            Assert.AreEqual(1, requesterTickets.Count);
+            Assert.AreEqual("Printer offline", requesterTickets[0].Title);
+        }
 
         [TestMethod]
         public async Task Details_ExistingTicket_ShouldReturnViewModelWithSlaInformation()
@@ -428,6 +486,7 @@ namespace ITHelpdeskSystem.Tests
             Assert.AreEqual("Index", redirect.ActionName);
         }
 
+
         [TestMethod]
         public async Task Resolve_GetUnknownTicket_ShouldReturnNotFound()
         {
@@ -565,6 +624,7 @@ namespace ITHelpdeskSystem.Tests
             return ticket;
         }
 
+
         private async Task<Ticket> AddInProgressTicket()
         {
             var ticket = CreateValidTicket();
@@ -592,6 +652,30 @@ namespace ITHelpdeskSystem.Tests
             ticket.CreatedAt = DateTime.UtcNow;
             ticket.TriagedAt = DateTime.UtcNow;
             ticket.ResolvedAt = DateTime.UtcNow;
+
+            _context.Tickets.Add(ticket);
+            await _context.SaveChangesAsync();
+
+            return ticket;
+        }
+
+        private async Task<Ticket> AddTicket(
+    string title,
+    string requesterName,
+    TicketStatus status,
+    TicketPriority priority,
+    DateTime createdAt)
+        {
+            var ticket = CreateValidTicket();
+
+            ticket.Title = title;
+            ticket.RequesterName = requesterName;
+            ticket.Status = status;
+            ticket.Priority = priority;
+            ticket.CreatedAt = createdAt;
+            ticket.AssignedTechnician = status == TicketStatus.Open ? null : "Alex";
+            ticket.TriagedAt = status == TicketStatus.Open ? null : DateTime.UtcNow;
+            ticket.ResolvedAt = status == TicketStatus.Resolved ? DateTime.UtcNow : null;
 
             _context.Tickets.Add(ticket);
             await _context.SaveChangesAsync();

@@ -50,70 +50,78 @@
     </div>
 </form>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Requester</th>
-            <th>Priority</th>
-            <th>Status</th>
-            <th>Technician</th>
-            <th>Created</th>
-            <th></th>
-        </tr>
-    </thead>
-
-    <tbody>
-        @foreach (var ticket in Model)
-        {
+@if (!Model.Any())
+{
+    <!-- No tickets matched the current search/filter criteria -->
+    <p class="text-muted">No tickets match your search/filter criteria.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>#@ticket.Id</td>
-
-                <td>@ticket.Title</td>
-
-                <td>@ticket.RequesterName</td>
-
-                <td>@ticket.Priority</td>
-
-                <td>@ticket.Status</td>
-
-                <td>
-                    @(ticket.AssignedTechnician ?? "Unassigned")
-                </td>
-
-                <td>
-                    @ticket.CreatedAt.ToLocalTime()
-                </td>
-                <td>
-                    <a asp-action="Details"
-                       asp-route-id="@ticket.Id"
-                       class="btn btn-sm btn-secondary">
-                        Details
-                    </a>
-
-                    @if (ticket.Status == ITHelpdeskSystem.Models.TicketStatus.Open)
-                    {
-                        <a asp-action="Triage"
-                           asp-route-id="@ticket.Id"
-                           class="btn btn-sm btn-primary">
-                            Triage
-                        </a>
-                    }
-                    else if (ticket.Status == ITHelpdeskSystem.Models.TicketStatus.InProgress)
-                    {
-                        <a asp-action="Resolve"
-                           asp-route-id="@ticket.Id"
-                           class="btn btn-sm btn-success">
-                            Resolve
-                        </a>
-                    }
-                    else
-                    {
-                        <span class="text-muted">Resolved</span>
-                    }
-                </td>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Requester</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Technician</th>
+                <th>Created</th>
+                <th></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+
+        <tbody>
+            @foreach (var ticket in Model)
+            {
+                <tr>
+                    <td>#@ticket.Id</td>
+
+                    <td>@ticket.Title</td>
+
+                    <td>@ticket.RequesterName</td>
+
+                    <td>@ticket.Priority</td>
+
+                    <td>@ticket.Status</td>
+
+                    <td>
+                        @(ticket.AssignedTechnician ?? "Unassigned")
+                    </td>
+
+                    <td>
+                        @ticket.CreatedAt.ToLocalTime()
+                    </td>
+                    <td>
+                        <a asp-action="Details"
+                        asp-route-id="@ticket.Id"
+                        class="btn btn-sm btn-secondary">
+                            Details
+                        </a>
+
+                        @if (ticket.Status == ITHelpdeskSystem.Models.TicketStatus.Open)
+                        {
+                            <a asp-action="Triage"
+                            asp-route-id="@ticket.Id"
+                            class="btn btn-sm btn-primary">
+                                Triage
+                            </a>
+                        }
+                        else if (ticket.Status == ITHelpdeskSystem.Models.TicketStatus.InProgress)
+                        {
+                            <a asp-action="Resolve"
+                            asp-route-id="@ticket.Id"
+                            class="btn btn-sm btn-success">
+                                Resolve
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Resolved</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -233,6 +233,65 @@ namespace ITHelpdeskSystem.Tests
             Assert.AreEqual(1, requesterTickets.Count);
             Assert.AreEqual("Printer offline", requesterTickets[0].Title);
         }
+        [TestMethod]
+        public async Task Index_CombinedFilters_ShouldReturnOnlyTicketsMatchingAllCriteria()
+        {
+            await AddTicket("VPN not connecting", "Cara", TicketStatus.InProgress, TicketPriority.High, DateTime.UtcNow);
+            await AddTicket("VPN slow", "Cara", TicketStatus.Resolved, TicketPriority.High, DateTime.UtcNow);
+            await AddTicket("Printer offline", "Ben", TicketStatus.InProgress, TicketPriority.High, DateTime.UtcNow);
+
+            // Search + Status + Priority together should narrow down to a single ticket.
+            var result = await _controller.Index(
+                searchTerm: "Cara",
+                status: TicketStatus.InProgress,
+                priority: TicketPriority.High);
+
+            var view = (ViewResult)result;
+            var tickets = view.Model as List<Ticket>;
+
+            Assert.IsNotNull(tickets);
+            Assert.AreEqual(1, tickets.Count);
+            Assert.AreEqual("VPN not connecting", tickets[0].Title);
+        }
+
+        [TestMethod]
+        public async Task Index_NoMatchingResults_ShouldReturnEmptyListWithoutError()
+        {
+            await AddTicket("Printer offline", "Ben", TicketStatus.Open, TicketPriority.Unassigned, DateTime.UtcNow);
+
+            // Open + High is not a valid workflow combination, so no ticket should ever match this.
+            var result = await _controller.Index(
+                status: TicketStatus.Open,
+                priority: TicketPriority.High);
+
+            var view = (ViewResult)result;
+            var tickets = view.Model as List<Ticket>;
+
+            Assert.IsNotNull(tickets);
+            Assert.AreEqual(0, tickets.Count);
+        }
+
+        [TestMethod]
+        public async Task Index_NoFiltersApplied_ShouldReturnAllTicketsInNewestFirstOrder()
+        {
+            var oldest = await AddTicket("Oldest ticket", "Ben", TicketStatus.Open, TicketPriority.Unassigned, DateTime.UtcNow.AddDays(-2));
+            var middle = await AddTicket("Middle ticket", "Cara", TicketStatus.InProgress, TicketPriority.Medium, DateTime.UtcNow.AddDays(-1));
+            var newest = await AddTicket("Newest ticket", "Dev", TicketStatus.Resolved, TicketPriority.Low, DateTime.UtcNow);
+
+            // No search term, status, or priority supplied - matches existing default behaviour.
+            var result = await _controller.Index();
+
+            var view = (ViewResult)result;
+            var tickets = view.Model as List<Ticket>;
+
+            Assert.IsNotNull(tickets);
+            Assert.AreEqual(3, tickets.Count);
+
+            // Confirms newest-first ordering is preserved.
+            Assert.AreEqual(newest.Id, tickets[0].Id);
+            Assert.AreEqual(middle.Id, tickets[1].Id);
+            Assert.AreEqual(oldest.Id, tickets[2].Id);
+        }
 
         [TestMethod]
         public async Task Details_ExistingTicket_ShouldReturnViewModelWithSlaInformation()

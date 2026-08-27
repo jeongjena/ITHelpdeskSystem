@@ -719,11 +719,11 @@ namespace ITHelpdeskSystem.Tests
         }
 
         private async Task<Ticket> AddTicket(
-    string title,
-    string requesterName,
-    TicketStatus status,
-    TicketPriority priority,
-    DateTime createdAt)
+            string title,
+            string requesterName,
+            TicketStatus status,
+            TicketPriority priority,
+            DateTime createdAt)
         {
             var ticket = CreateValidTicket();
 

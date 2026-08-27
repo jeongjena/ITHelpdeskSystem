@@ -396,5 +396,14 @@ namespace ITHelpdeskSystem.Tests
 
             Assert.AreEqual(expected, result);
         }
+
+        [TestMethod]
+        public void CalculateDueDate_WithPartialHourBeforeEndOfDay_ShouldCarryRemainingMinutes()
+        {
+            var start = new DateTime(2026, 8, 17, 16, 30, 0);
+            var result = _slaService.CalculateDueDate(start, 2);
+            var expected = new DateTime(2026, 8, 18, 10, 30, 0);
+            Assert.AreEqual(expected, result);
+        }
     }
 }

@@ -43,14 +43,27 @@ namespace ITHelpdeskSystem.Services
                 _newZealandTimeZone);
         }
 
-        // Calculates an SLA due date using a New Zealand local time.
+        // Calculates an SLA due date using a New Zealand local time.public class TicketDetailsViewModel
+{
+    public Ticket Ticket { get; set; } = null!;
+
+    // New: display-friendly NZ local timestamps (derived from stored UTC)
+    public DateTime CreatedAtNz { get; set; }
+    public DateTime? TriagedAtNz { get; set; }
+    public DateTime? ResolvedAtNz { get; set; }
+
+    public DateTime TriageDueAt { get; set; }
+    public string TriageSlaStatus { get; set; } = string.Empty;
+    public DateTime? ResolutionDueAt { get; set; }
+    public string ResolutionSlaStatus { get; set; } = string.Empty;
+}
         // Business hours are Monday-Friday, 9am-5pm.
         public DateTime CalculateDueDate(
             DateTime startTime,
             int businessHours)
         {
             var current = MoveToBusinessTime(startTime);
-            var remainingHours = businessHours;
+            double remainingHours = businessHours;
 
             while (remainingHours > 0)
             {
@@ -65,7 +78,7 @@ namespace ITHelpdeskSystem.Services
                     return current.AddHours(remainingHours);
                 }
 
-                remainingHours -= (int)availableHours;
+                remainingHours -= availableHours;
 
                 // Move to 9am on the next business day.
                 current = MoveToBusinessTime(

@@ -31,20 +31,20 @@
 
     <dt class="col-sm-3">Created At</dt>
     <dd class="col-sm-9">
-        @Model.Ticket.CreatedAt.ToLocalTime()
+        @Model.CreatedAtNz
     </dd>
 
     <dt class="col-sm-3">Triaged At</dt>
     <dd class="col-sm-9">
-        @(Model.Ticket.TriagedAt.HasValue
-            ? Model.Ticket.TriagedAt.Value.ToLocalTime().ToString()
+        @(Model.TriagedAtNz.HasValue
+            ? Model.TriagedAtNz.Value.ToString()
             : "Not yet triaged")
     </dd>
 
     <dt class="col-sm-3">Resolved At</dt>
     <dd class="col-sm-9">
-        @(Model.Ticket.ResolvedAt.HasValue
-            ? Model.Ticket.ResolvedAt.Value.ToLocalTime().ToString()
+        @(Model.ResolvedAtNz.HasValue
+            ? Model.ResolvedAtNz.Value.ToString()
             : "Not yet resolved")
     </dd>
 </dl>

@@ -50,7 +50,7 @@ namespace ITHelpdeskSystem.Services
             int businessHours)
         {
             var current = MoveToBusinessTime(startTime);
-            var remainingHours = businessHours;
+            double remainingHours = businessHours;
 
             while (remainingHours > 0)
             {
@@ -65,7 +65,7 @@ namespace ITHelpdeskSystem.Services
                     return current.AddHours(remainingHours);
                 }
 
-                remainingHours -= (int)availableHours;
+                remainingHours -= availableHours;
 
                 // Move to 9am on the next business day.
                 current = MoveToBusinessTime(

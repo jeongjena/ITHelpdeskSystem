@@ -84,6 +84,20 @@ namespace ITHelpdeskSystem.Controllers
             {
                 Ticket = ticket,
 
+                // Convert stored UTC timestamps to New Zealand time for display.
+                CreatedAtNz =
+                    _slaService.ConvertUtcToNewZealandTime(ticket.CreatedAt),
+
+                TriagedAtNz =
+                    ticket.TriagedAt.HasValue
+                        ? _slaService.ConvertUtcToNewZealandTime(ticket.TriagedAt.Value)
+                        : null,
+
+                ResolvedAtNz =
+                    ticket.ResolvedAt.HasValue
+                        ? _slaService.ConvertUtcToNewZealandTime(ticket.ResolvedAt.Value)
+                        : null,
+
                 TriageDueAt = _slaService.CalculateDueDateFromUtc(
                     ticket.CreatedAt,
                     2),
@@ -97,6 +111,7 @@ namespace ITHelpdeskSystem.Controllers
                     currentTime)
             };
 
+            // Calculate the resolution SLA due time after valid triage.
             if (ticket.TriagedAt.HasValue &&
                 ticket.Priority != TicketPriority.Unassigned)
             {
@@ -117,9 +132,9 @@ namespace ITHelpdeskSystem.Controllers
         // Displays all submitted tickets, optionally filtered by search term, status, and priority.
         [HttpGet]
         public async Task<IActionResult> Index(
-    string? searchTerm = null,
-    TicketStatus? status = null,
-    TicketPriority? priority = null)
+            string? searchTerm = null,
+            TicketStatus? status = null,
+            TicketPriority? priority = null)
         {
             var query = _context.Tickets.AsQueryable();
 

@@ -81,9 +81,32 @@ else
 
                     <td>@ticket.RequesterName</td>
 
-                    <td>@ticket.Priority</td>
+                    <td>
+                        @{
+                            var priorityClass = ticket.Priority switch
+                            {
+                                ITHelpdeskSystem.Models.TicketPriority.High => "bg-danger",
+                                ITHelpdeskSystem.Models.TicketPriority.Medium => "bg-warning text-dark",
+                                ITHelpdeskSystem.Models.TicketPriority.Low => "bg-success",
+                                ITHelpdeskSystem.Models.TicketPriority.Unassigned => "bg-secondary",
+                                _ => "bg-secondary"
+                            };
+                        }
+                        <span class="badge @priorityClass">@ticket.Priority</span>
+                    </td>
 
-                    <td>@ticket.Status</td>
+                    <td>
+                        @{
+                            var statusClass = ticket.Status switch
+                            {
+                                ITHelpdeskSystem.Models.TicketStatus.Open => "bg-primary",
+                                ITHelpdeskSystem.Models.TicketStatus.InProgress => "bg-warning text-dark",
+                                ITHelpdeskSystem.Models.TicketStatus.Resolved => "bg-success",
+                                _ => "bg-secondary"
+                            };
+                        }
+                        <span class="badge @statusClass">@ticket.Status</span>
+                    </td>
 
                     <td>
                         @(ticket.AssignedTechnician ?? "Unassigned")
@@ -94,24 +117,24 @@ else
                     </td>
                     <td>
                         <a asp-action="Details"
-                        asp-route-id="@ticket.Id"
-                        class="btn btn-sm btn-secondary">
+                           asp-route-id="@ticket.Id"
+                           class="btn btn-sm btn-secondary">
                             Details
                         </a>
 
                         @if (ticket.Status == ITHelpdeskSystem.Models.TicketStatus.Open)
                         {
                             <a asp-action="Triage"
-                            asp-route-id="@ticket.Id"
-                            class="btn btn-sm btn-primary">
+                               asp-route-id="@ticket.Id"
+                               class="btn btn-sm btn-primary">
                                 Triage
                             </a>
                         }
                         else if (ticket.Status == ITHelpdeskSystem.Models.TicketStatus.InProgress)
                         {
                             <a asp-action="Resolve"
-                            asp-route-id="@ticket.Id"
-                            class="btn btn-sm btn-success">
+                               asp-route-id="@ticket.Id"
+                               class="btn btn-sm btn-success">
                                 Resolve
                             </a>
                         }

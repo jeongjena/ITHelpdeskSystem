@@ -4,6 +4,7 @@ using ITHelpdeskSystem.Services;
 using ITHelpdeskSystem.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ITHelpdeskSystem.Controllers
 {
@@ -21,6 +22,7 @@ namespace ITHelpdeskSystem.Controllers
             _slaService = slaService;
         }
 
+        // Public - employees can submit tickets.
         // Displays the empty ticket submission form.
         [HttpGet]
         public IActionResult Create()
@@ -28,6 +30,7 @@ namespace ITHelpdeskSystem.Controllers
             return View();
         }
 
+        // Public - processes employee ticket submission.
         // Processes the submitted ticket form.
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -68,6 +71,7 @@ namespace ITHelpdeskSystem.Controllers
         }
 
         // Displays full read-only details for a single ticket, regardless of status.
+        [Authorize(Roles = "ITStaff")]
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
@@ -128,8 +132,8 @@ namespace ITHelpdeskSystem.Controllers
             return View(viewModel);
         }
 
-        // Displays all submitted tickets.
         // Displays all submitted tickets, optionally filtered by search term, status, and priority.
+        [Authorize(Roles = "ITStaff")]
         [HttpGet]
         public async Task<IActionResult> Index(
             string? searchTerm = null,
@@ -179,6 +183,7 @@ namespace ITHelpdeskSystem.Controllers
         }
 
         // Displays the selected ticket for triage.
+        [Authorize(Roles = "ITStaff")]
         [HttpGet]
         public async Task<IActionResult> Triage(int id)
         {
@@ -199,6 +204,7 @@ namespace ITHelpdeskSystem.Controllers
         }
 
         // Processes the completed ticket triage.
+        [Authorize(Roles = "ITStaff")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Triage(
@@ -252,6 +258,7 @@ namespace ITHelpdeskSystem.Controllers
         }
 
         // Displays the selected ticket for resolution.
+        [Authorize(Roles = "ITStaff")]
         [HttpGet]
         public async Task<IActionResult> Resolve(int id)
         {
@@ -272,6 +279,7 @@ namespace ITHelpdeskSystem.Controllers
         }
 
         // Processes the completed ticket resolution.
+        [Authorize(Roles = "ITStaff")]
         [HttpPost]
         [ActionName("Resolve")]
         [ValidateAntiForgeryToken]

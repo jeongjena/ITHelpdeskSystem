@@ -23,13 +23,63 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-light px-3" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-light px-3"
+                               asp-area=""
+                               asp-controller="Home"
+                               asp-action="Index">
+                                Home
+                            </a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-light px-3" asp-controller="Tickets" asp-action="Index">Ticket Management</a>
+                            <a class="nav-link text-light px-3"
+                               asp-controller="Tickets"
+                               asp-action="Create">
+                                Submit Ticket
+                            </a>
                         </li>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-light px-3"
+                                   asp-controller="Tickets"
+                                   asp-action="Index">
+                                    Ticket Management
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <form asp-controller="Account"
+                                      asp-action="Logout"
+                                      method="post"
+                                      class="d-inline">
+
+                                    <button type="submit"
+                                            class="btn btn-link nav-link text-light px-3">
+                                        Logout
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-light px-3"
+                                   asp-controller="Account"
+                                   asp-action="Login">
+                                    Staff Login
+                                </a>
+                            </li>
+                        }
+
                         <li class="nav-item">
-                            <a class="nav-link text-light px-3" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-light px-3"
+                               asp-area=""
+                               asp-controller="Home"
+                               asp-action="Privacy">
+                                Privacy
+                            </a>
                         </li>
                     </ul>
                 </div>

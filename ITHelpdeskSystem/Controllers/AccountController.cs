@@ -12,7 +12,14 @@ namespace ITHelpdeskSystem.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            // If the user is already logged in, go directly to Ticket Management.
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("Index", "Tickets");
+            }
+
             return View();
+
         }
 
         // Processes the submitted IT staff login form.

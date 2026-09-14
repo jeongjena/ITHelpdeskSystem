@@ -4,10 +4,37 @@
 
 <div class="text-center py-5">
     <h1 class="display-4">Northbridge Consulting IT Helpdesk</h1>
-    <p class="lead text-muted">
-        Submit, track, and resolve IT support tickets with SLA-backed response times.
-    </p>
-    <a asp-controller="Tickets" asp-action="Index" class="btn btn-primary btn-lg mt-3">
-        View Tickets
-    </a>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <p class="lead text-muted">
+            Manage IT support tickets and SLA response times.
+        </p>
+
+        <a asp-controller="Tickets"
+           asp-action="Index"
+           class="btn btn-primary btn-lg mt-3">
+            Ticket Management
+        </a>
+    }
+    else
+    {
+        <p class="lead text-muted">
+            Submit an IT support request or sign in as IT staff.
+        </p>
+
+        <div class="mt-3">
+            <a asp-controller="Tickets"
+               asp-action="Create"
+               class="btn btn-primary btn-lg me-2">
+                Submit a Ticket
+            </a>
+
+            <a asp-controller="Account"
+               asp-action="Login"
+               class="btn btn-outline-secondary btn-lg">
+                Staff Login
+            </a>
+        </div>
+    }
 </div>

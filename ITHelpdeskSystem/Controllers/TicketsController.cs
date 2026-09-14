@@ -80,36 +80,36 @@ namespace ITHelpdeskSystem.Controllers
 
             var currentTime = DateTime.UtcNow;
 
-            var viewModel = new TicketDetailsViewModel
-            {
-                Ticket = ticket,
+                var viewModel = new TicketDetailsViewModel
+                {
+                    Ticket = ticket,
 
-                // Convert stored UTC timestamps to New Zealand time for display.
-                CreatedAtNz =
-                    _slaService.ConvertUtcToNewZealandTime(ticket.CreatedAt),
+                    // Convert stored UTC timestamps to New Zealand time for display.
+                    CreatedAtNz =
+                        _slaService.ConvertUtcToNewZealandTime(ticket.CreatedAt),
 
-                TriagedAtNz =
-                    ticket.TriagedAt.HasValue
-                        ? _slaService.ConvertUtcToNewZealandTime(ticket.TriagedAt.Value)
-                        : null,
+                    TriagedAtNz =
+                        ticket.TriagedAt.HasValue
+                            ? _slaService.ConvertUtcToNewZealandTime(ticket.TriagedAt.Value)
+                            : null,
 
-                ResolvedAtNz =
-                    ticket.ResolvedAt.HasValue
-                        ? _slaService.ConvertUtcToNewZealandTime(ticket.ResolvedAt.Value)
-                        : null,
+                    ResolvedAtNz =
+                        ticket.ResolvedAt.HasValue
+                            ? _slaService.ConvertUtcToNewZealandTime(ticket.ResolvedAt.Value)
+                            : null,
 
-                TriageDueAt = _slaService.CalculateDueDateFromUtc(
-                    ticket.CreatedAt,
-                    2),
+                    TriageDueAt = _slaService.CalculateDueDateFromUtc(
+                        ticket.CreatedAt,
+                        2),
 
-                TriageSlaStatus = _slaService.GetTriageSlaStatus(
-                    ticket,
-                    currentTime),
+                    TriageSlaStatus = _slaService.GetTriageSlaStatus(
+                        ticket,
+                        currentTime),
 
-                ResolutionSlaStatus = _slaService.GetResolutionSlaStatus(
-                    ticket,
-                    currentTime)
-            };
+                    ResolutionSlaStatus = _slaService.GetResolutionSlaStatus(
+                        ticket,
+                        currentTime)
+                };
 
             // Calculate the resolution SLA due time after valid triage.
             if (ticket.TriagedAt.HasValue &&

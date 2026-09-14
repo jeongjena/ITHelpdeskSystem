@@ -1,4 +1,5 @@
-﻿@model ITHelpdeskSystem.Models.Ticket
+﻿@inject ITHelpdeskSystem.Services.SlaService SlaService
+@model ITHelpdeskSystem.Models.Ticket
 
 @{
     ViewData["Title"] = "Triage Ticket";
@@ -21,7 +22,7 @@
 
     <p>
         <strong>Created:</strong>
-        @Model.CreatedAt.ToLocalTime()
+        @SlaService.ConvertUtcToNewZealandTime(Model.CreatedAt)
     </p>
 
     <p>

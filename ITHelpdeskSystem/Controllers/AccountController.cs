@@ -80,5 +80,15 @@ namespace ITHelpdeskSystem.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
+        // Displays an access denied page when an authenticated user
+        // does not have permission to access a protected resource.
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
     }
+
+
 }

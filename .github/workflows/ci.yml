@@ -1,14 +1,13 @@
 # Continuous Integration workflow for ITHelpdeskSystem
 # Automatically restores, builds, and tests the solution on every push
-# or pull request to the master branch, without manual intervention.
+# to the master branch, without manual intervention.
 # This satisfies Task 5 (CI/CD or equivalent automated quality workflow).
 name: CI
 
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  
 
 jobs:
   build-and-test:

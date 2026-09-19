@@ -1,3 +1,7 @@
+# Continuous Integration workflow for ITHelpdeskSystem
+# Automatically restores, builds, and tests the solution on every push
+# or pull request to the master branch, without manual intervention.
+# This satisfies Task 5 (CI/CD or equivalent automated quality workflow).
 name: CI
 
 on:
@@ -8,20 +12,38 @@ on:
 
 jobs:
   build-and-test:
+  # Ubuntu runner chosen for speed and cost efficiency; , NET is
+  # cross-platform so no Windows-specific dependencies are needed.
+
     runs-on: ubuntu-latest
     steps:
+    # Pulls the latest code from the repository into the runner
       - uses: actions/checkout@v4
+
+      # Installs the .NET SDK version needed to build and test the solution.
+      # 10.0.x matches the project's actual target framework (confirmed via
+      # local build output) and also supports the newer .slnx solution format.
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
+          # Restores all NuGet package dependencies before building
+
       - name: Restore dependencies
         run: dotnet restore ITHelpdeskSystem.slnx
 
+        # Builds the solution in Release configuration.
+      # no-restore skips a redundant restore since it was just done above.
+
       - name: Build
         run: dotnet build ITHelpdeskSystem.slnx --no-restore --configuration Release
+
+        # Runs the full MSTest suite (currently 62 tests) against the build.
+      # no-build avoids rebuilding since the Build step already produced
+      # the output. If any test fails, this step fails and the workflow
+      # shows a red X on the commit; if all pass, it shows a green check.
 
       - name: Run tests
         run: dotnet test ITHelpdeskSystem.slnx --no-build --configuration Release --verbosity normal

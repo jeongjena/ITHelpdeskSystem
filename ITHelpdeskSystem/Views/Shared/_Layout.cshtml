@@ -39,6 +39,14 @@
                             </a>
                         </li>
 
+                        <li class="nav-item">
+                            <a class="nav-link text-light px-3"
+                               asp-controller="Tickets"
+                               asp-action="Track">
+                                Track Ticket
+                            </a>
+                        </li>
+
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">

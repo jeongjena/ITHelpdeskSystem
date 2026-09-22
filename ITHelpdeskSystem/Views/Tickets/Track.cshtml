@@ -1,33 +1,47 @@
 @model ITHelpdeskSystem.ViewModels.RequesterTrackViewModel
 
 @{
-	ViewData["Title"] = "Track Your Ticket";
+    ViewData["Title"] = "Track Your Ticket";
 }
 
-<h1 class="h4">Track Your Ticket</h1>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h1 class="mb-3">Track Your Ticket</h1>
 
-<p>Enter your Ticket ID and the email address you used when submitting the ticket.</p>
+        <p class="text-muted">
+            Enter your Ticket ID and the email address you used when submitting the ticket.
+        </p>
 
-<form asp-action="Track" method="post">
-	<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <form asp-action="Track" method="post">
 
-	<div class="mb-3">
-		<label asp-for="TicketId" class="form-label"></label>
-		<input asp-for="TicketId" class="form-control" />
-		<span asp-validation-for="TicketId" class="text-danger"></span>
-	</div>
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger"></div>
 
-	<div class="mb-3">
-		<label asp-for="RequesterEmail" class="form-label"></label>
-		<input asp-for="RequesterEmail" class="form-control" />
-		<span asp-validation-for="RequesterEmail" class="text-danger"></span>
-	</div>
+            <div class="mb-3">
+                <label asp-for="TicketId"
+                       class="form-label"></label>
+                <input asp-for="TicketId"
+                       class="form-control" />
+                <span asp-validation-for="TicketId"
+                      class="text-danger"></span>
+            </div>
 
-	<button type="submit" class="btn btn-primary">Lookup Ticket</button>
-</form>
+            <div class="mb-3">
+                <label asp-for="RequesterEmail"
+                       class="form-label"></label>
+                <input asp-for="RequesterEmail"
+                       class="form-control" />
+                <span asp-validation-for="RequesterEmail"
+                      class="text-danger"></span>
+            </div>
 
-<hr />
+            <button type="submit" class="btn btn-primary">
+                Lookup Ticket
+            </button>
+        </form>
+    </div>
+</div>
 
-<p>
-	<a asp-action="Create" asp-controller="Tickets" class="btn btn-link">Create a new ticket</a>
-</p>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -4,6 +4,9 @@ using ITHelpdeskSystem.Models;
 using ITHelpdeskSystem.Services;
 using ITHelpdeskSystem.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -655,6 +658,176 @@ namespace ITHelpdeskSystem.Tests
 
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
+
+        [TestMethod]
+        public void Track_Get_ReturnsViewWithModel()
+        {
+            var result = _controller.Track();
+
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+
+            var view = (ViewResult)result;
+
+            Assert.IsInstanceOfType(view.Model, typeof(RequesterTrackViewModel));
+        }
+
+        [TestMethod]
+        public void RequesterTrackViewModel_MissingTicketId_ValidationFails()
+        {
+            var model = new RequesterTrackViewModel
+            {
+                TicketId = null,
+                RequesterEmail = "jena@example.com"
+            };
+
+            // Validate the required Ticket ID rule.
+            var context = new ValidationContext(model);
+            var results = new List<ValidationResult>();
+
+            var valid = Validator.TryValidateObject(model, context, results, true);
+
+            Assert.IsFalse(valid);
+            Assert.IsTrue(results.Any(r => r.ErrorMessage == "Ticket ID is required."));
+        }
+
+        [TestMethod]
+        public void RequesterTrackViewModel_InvalidEmail_ValidationFails()
+        {
+            var model = new RequesterTrackViewModel
+            {
+                TicketId = 1,
+                RequesterEmail = "not-an-email"
+            };
+
+            // Validate the email format rule.
+            var context = new ValidationContext(model);
+            var results = new List<ValidationResult>();
+
+            var valid = Validator.TryValidateObject(model, context, results, true);
+
+            Assert.IsFalse(valid);
+            Assert.IsTrue(results.Any(r => r.ErrorMessage == "Enter a valid email address."));
+        }
+
+        [TestMethod]
+        public async Task Track_Post_NonexistentId_ReturnsGenericError()
+        {
+            var model = new RequesterTrackViewModel
+            {
+                TicketId = 999,
+                RequesterEmail = "jena@example.com"
+            };
+
+            var result = await _controller.Track(model);
+
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+
+            var view = (ViewResult)result;
+
+            // Return the form with the original input.
+            Assert.AreSame(model, view.Model);
+            Assert.IsFalse(_controller.ModelState.IsValid);
+
+            var errors = _controller.ModelState[string.Empty].Errors;
+            Assert.IsTrue(errors.Any());
+            Assert.AreEqual("No matching ticket found.", errors[0].ErrorMessage);
+        }
+
+        [TestMethod]
+        public async Task Track_Post_WrongEmail_ReturnsGenericError()
+        {
+            var ticket = await AddOpenTicket();
+
+            var model = new RequesterTrackViewModel
+            {
+                TicketId = ticket.Id,
+                RequesterEmail = "other@example.com"
+            };
+
+            var result = await _controller.Track(model);
+
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+
+            var view = (ViewResult)result;
+
+            // Use the same generic error as an unknown Ticket ID.
+            Assert.AreSame(model, view.Model);
+            Assert.IsFalse(_controller.ModelState.IsValid);
+
+            var errors = _controller.ModelState[string.Empty].Errors;
+            Assert.IsTrue(errors.Any());
+            Assert.AreEqual("No matching ticket found.", errors[0].ErrorMessage);
+        }
+
+        [TestMethod]
+        public async Task Track_Post_CaseInsensitiveTrimmedEmail_ReturnsResult()
+        {
+            var ticket = await AddOpenTicket();
+
+            // Matching should ignore case and surrounding spaces.
+            var model = new RequesterTrackViewModel
+            {
+                TicketId = ticket.Id,
+                RequesterEmail = " " + ticket.RequesterEmail.ToUpperInvariant() + " "
+            };
+
+            var result = await _controller.Track(model);
+
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+
+            var view = (ViewResult)result;
+            Assert.AreEqual("TrackResult", view.ViewName);
+            Assert.IsInstanceOfType(view.Model, typeof(RequesterTicketResultViewModel));
+
+            var vm = (RequesterTicketResultViewModel)view.Model;
+            Assert.AreEqual(ticket.Id, vm.TicketId);
+        }
+
+        [TestMethod]
+        public async Task Track_Post_ValidMatch_ReturnsMappedResultWithNzTime()
+        {
+            // Use a fixed UTC time so the expected result is consistent.
+            var createdAt = new DateTime(
+                2020, 1, 2, 3, 4, 5,
+                DateTimeKind.Utc);
+
+            var ticket = await AddTicket(
+                "Test title",
+                "Requester",
+                TicketStatus.Open,
+                TicketPriority.Medium,
+                createdAt);
+
+            var model = new RequesterTrackViewModel
+            {
+                TicketId = ticket.Id,
+                RequesterEmail = ticket.RequesterEmail
+            };
+
+            var result = await _controller.Track(model);
+
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+
+            var view = (ViewResult)result;
+            Assert.AreEqual("TrackResult", view.ViewName);
+            Assert.IsInstanceOfType(view.Model, typeof(RequesterTicketResultViewModel));
+
+            var vm = (RequesterTicketResultViewModel)view.Model;
+
+            // Check the ticket details returned to the requester.
+            Assert.AreEqual(ticket.Id, vm.TicketId);
+            Assert.AreEqual(ticket.Title, vm.Title);
+            Assert.AreEqual(ticket.Description, vm.Description);
+            Assert.AreEqual(ticket.Status, vm.Status);
+            Assert.AreEqual(ticket.Priority, vm.Priority);
+
+            // Created time should use the project's NZ time conversion.
+            var expectedNz =
+                new SlaService().ConvertUtcToNewZealandTime(ticket.CreatedAt);
+
+            Assert.AreEqual(expectedNz, vm.CreatedAtNz);
+        }
+
         private static Ticket CreateValidTicket()
         {
             return new Ticket

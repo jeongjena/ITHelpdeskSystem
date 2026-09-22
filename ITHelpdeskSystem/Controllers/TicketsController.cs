@@ -40,7 +40,6 @@ namespace ITHelpdeskSystem.Controllers
             {
                 return View(ticket);
             }
-
             ticket.Priority = TicketPriority.Unassigned;
             ticket.Status = TicketStatus.Open;
             ticket.AssignedTechnician = null;
@@ -68,6 +67,62 @@ namespace ITHelpdeskSystem.Controllers
             }
 
             return View(ticket);
+        }
+
+        // Public - allows a requester to track an existing ticket by ID and email.
+        // Does not require authentication and does not expose whether the ID exists when the email mismatches.
+        [HttpGet]
+        public IActionResult Track()
+        {
+            return View(new RequesterTrackViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Track(RequesterTrackViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Ensure TicketId was provided
+            if (!model.TicketId.HasValue)
+            {
+                ModelState.AddModelError(string.Empty, "No matching ticket found.");
+                return View(model);
+            }
+
+            var ticket = await _context.Tickets.FindAsync(model.TicketId.Value);
+
+            // Generic failure message for both not-found and email mismatch to avoid information disclosure.
+            if (ticket == null)
+            {
+                ModelState.AddModelError(string.Empty, "No matching ticket found.");
+                return View(model);
+            }
+
+            var providedEmail = model.RequesterEmail?.Trim();
+            var storedEmail = ticket.RequesterEmail?.Trim();
+
+            if (string.IsNullOrEmpty(providedEmail) ||
+                !string.Equals(providedEmail, storedEmail, System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                ModelState.AddModelError(string.Empty, "No matching ticket found.");
+                return View(model);
+            }
+
+            var result = new RequesterTicketResultViewModel
+            {
+                TicketId = ticket.Id,
+                Title = ticket.Title,
+                Description = ticket.Description,
+                Status = ticket.Status,
+                Priority = ticket.Priority,
+                CreatedAtNz = _slaService.ConvertUtcToNewZealandTime(ticket.CreatedAt)
+            };
+
+            return View("TrackResult", result);
         }
 
         // Displays full read-only details for a single ticket, regardless of status.

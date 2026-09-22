@@ -1,0 +1,29 @@
+@model ITHelpdeskSystem.ViewModels.RequesterTicketResultViewModel
+
+@{
+	ViewData["Title"] = "Ticket Details";
+}
+
+<h1 class="h4">Ticket #@Model.TicketId</h1>
+
+<div class="card mb-3">
+	<div class="card-body">
+		<h5 class="card-title">@Model.Title</h5>
+		<p class="card-text">@Model.Description</p>
+
+		<dl class="row">
+			<dt class="col-sm-3">Status</dt>
+			<dd class="col-sm-9">@Model.Status</dd>
+
+			<dt class="col-sm-3">Priority</dt>
+			<dd class="col-sm-9">@Model.Priority</dd>
+
+			<dt class="col-sm-3">Created</dt>
+			<dd class="col-sm-9">@Model.CreatedAtNz</dd>
+		</dl>
+	</div>
+</div>
+
+<p>
+	<a asp-action="Track" class="btn btn-secondary">Lookup another ticket</a>
+</p>

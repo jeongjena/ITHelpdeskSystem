@@ -12,5 +12,8 @@ namespace ITHelpdeskSystem.Data
         }
 
         public DbSet<Ticket> Tickets { get; set; }
+
+        // Stores progress comments linked to support tickets.
+        public DbSet<TicketComment> TicketComments { get; set; }
     }
 }

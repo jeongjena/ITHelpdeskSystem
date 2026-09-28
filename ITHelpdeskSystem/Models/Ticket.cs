@@ -45,5 +45,9 @@ namespace ITHelpdeskSystem.Models
 
         // Recorded when the issue is marked as resolved.
         public DateTime? ResolvedAt { get; set; }
+
+        // Progress comments recorded for this ticket.
+        public ICollection<TicketComment> Comments { get; set; }
+            = new List<TicketComment>();
     }
 }

@@ -82,6 +82,27 @@
     </dd>
 </dl>
 
+<hr />
+
+<h4>Progress Comments</h4>
+
+@if (Model.Comments.Count == 0)
+{
+    <p class="text-muted">No progress comments yet.</p>
+}
+else
+{
+    @foreach (var comment in Model.Comments)
+    {
+        <div class="border rounded p-3 mb-3">
+            <p class="mb-1">@comment.Text</p>
+            <small class="text-muted">
+                @comment.CreatedAtNz.ToString("dd MMM yyyy, h:mm tt")
+            </small>
+        </div>
+    }
+}
+
 <a asp-action="Index"
    class="btn btn-secondary">
     Back to Ticket Management

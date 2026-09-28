@@ -17,5 +17,8 @@ namespace ITHelpdeskSystem.ViewModels
         public DateTime? ResolutionDueAt { get; set; }
 
         public string ResolutionSlaStatus { get; set; } = string.Empty;
+
+        // Progress comments displayed on the ticket details page.
+        public List<TicketCommentViewModel> Comments { get; set; } = new();
     }
 }

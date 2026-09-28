@@ -130,7 +130,9 @@ namespace ITHelpdeskSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var ticket = await _context.Tickets.FindAsync(id);
+            var ticket = await _context.Tickets
+                .Include(t => t.Comments)
+                .FirstOrDefaultAsync(t => t.Id == id);
 
             if (ticket == null)
             {
@@ -138,37 +140,48 @@ namespace ITHelpdeskSystem.Controllers
             }
 
             var currentTime = DateTime.UtcNow;
+            
+            var viewModel = new TicketDetailsViewModel
+            {
+                Ticket = ticket,
 
-                var viewModel = new TicketDetailsViewModel
+                // Convert stored UTC timestamps to New Zealand time for display.
+                CreatedAtNz =
+                    _slaService.ConvertUtcToNewZealandTime(ticket.CreatedAt),
+
+                TriagedAtNz =
+                    ticket.TriagedAt.HasValue
+                        ? _slaService.ConvertUtcToNewZealandTime(ticket.TriagedAt.Value)
+                        : null,
+
+                ResolvedAtNz =
+                    ticket.ResolvedAt.HasValue
+                        ? _slaService.ConvertUtcToNewZealandTime(ticket.ResolvedAt.Value)
+                        : null,
+
+                TriageDueAt = _slaService.CalculateDueDateFromUtc(
+                    ticket.CreatedAt,
+                    2),
+
+                TriageSlaStatus = _slaService.GetTriageSlaStatus(
+                    ticket,
+                    currentTime),
+
+                ResolutionSlaStatus = _slaService.GetResolutionSlaStatus(
+                    ticket,
+                    currentTime)
+            };
+
+            // Display progress comments from oldest to newest.
+            viewModel.Comments = ticket.Comments
+                .OrderBy(c => c.CreatedAt)
+                .Select(c => new TicketCommentViewModel
                 {
-                    Ticket = ticket,
-
-                    // Convert stored UTC timestamps to New Zealand time for display.
+                    Text = c.Text,
                     CreatedAtNz =
-                        _slaService.ConvertUtcToNewZealandTime(ticket.CreatedAt),
-
-                    TriagedAtNz =
-                        ticket.TriagedAt.HasValue
-                            ? _slaService.ConvertUtcToNewZealandTime(ticket.TriagedAt.Value)
-                            : null,
-
-                    ResolvedAtNz =
-                        ticket.ResolvedAt.HasValue
-                            ? _slaService.ConvertUtcToNewZealandTime(ticket.ResolvedAt.Value)
-                            : null,
-
-                    TriageDueAt = _slaService.CalculateDueDateFromUtc(
-                        ticket.CreatedAt,
-                        2),
-
-                    TriageSlaStatus = _slaService.GetTriageSlaStatus(
-                        ticket,
-                        currentTime),
-
-                    ResolutionSlaStatus = _slaService.GetResolutionSlaStatus(
-                        ticket,
-                        currentTime)
-                };
+                        _slaService.ConvertUtcToNewZealandTime(c.CreatedAt)
+                })
+                .ToList();
 
             // Calculate the resolution SLA due time after valid triage.
             if (ticket.TriagedAt.HasValue &&

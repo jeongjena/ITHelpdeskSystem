@@ -93,7 +93,9 @@ namespace ITHelpdeskSystem.Controllers
                 return View(model);
             }
 
-            var ticket = await _context.Tickets.FindAsync(model.TicketId.Value);
+            var ticket = await _context.Tickets
+                .Include(t => t.Comments)
+                .FirstOrDefaultAsync(t => t.Id == model.TicketId.Value);
 
             // Generic failure message for both not-found and email mismatch to avoid information disclosure.
             if (ticket == null)
@@ -118,8 +120,16 @@ namespace ITHelpdeskSystem.Controllers
                 Title = ticket.Title,
                 Description = ticket.Description,
                 Status = ticket.Status,
-                Priority = ticket.Priority,
-                CreatedAtNz = _slaService.ConvertUtcToNewZealandTime(ticket.CreatedAt)
+                CreatedAtNz = _slaService.ConvertUtcToNewZealandTime(ticket.CreatedAt),
+                Comments = ticket.Comments
+                    .OrderBy(c => c.CreatedAt)
+                    .Select(c => new TicketCommentViewModel
+                    {
+                        Text = c.Text,
+                        CreatedAtNz =
+                            _slaService.ConvertUtcToNewZealandTime(c.CreatedAt)
+                    })
+                    .ToList()
             };
 
             return View("TrackResult", result);
@@ -142,6 +152,66 @@ namespace ITHelpdeskSystem.Controllers
             var viewModel = BuildTicketDetailsViewModel(ticket);
 
             return View(viewModel);
+        }
+
+        [Authorize(Roles = "ITStaff")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddComment(
+            int ticketId,
+            string? commentText)
+        {
+            // Load the ticket and comments so the Details view can be rebuilt on validation errors.
+            var ticket = await _context.Tickets
+                .Include(t => t.Comments)
+                .FirstOrDefaultAsync(t => t.Id == ticketId);
+
+            if (ticket == null)
+            {
+                return NotFound();
+            }
+
+            // Validate the comment after removing unnecessary surrounding whitespace.
+            if (string.IsNullOrWhiteSpace(commentText))
+            {
+                ModelState.AddModelError(
+                    "commentText",
+                    "Comment cannot be empty.");
+            }
+            else
+            {
+                commentText = commentText.Trim();
+
+                if (commentText.Length > 1000)
+                {
+                    ModelState.AddModelError(
+                        "commentText",
+                        "Comment must be 1000 characters or fewer.");
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var viewModel =
+                    BuildTicketDetailsViewModel(ticket);
+
+                return View("Details", viewModel);
+            }
+
+            // Store the comment without changing the ticket workflow.
+            var comment = new TicketComment
+            {
+                TicketId = ticketId,
+                Text = commentText!,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.TicketComments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(
+                nameof(Details),
+                new { id = ticketId });
         }
 
         // Displays all submitted tickets, optionally filtered by search term, status, and priority.

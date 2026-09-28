@@ -103,6 +103,35 @@ else
     }
 }
 
+<form asp-action="AddComment" method="post" class="mb-3">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden"
+           name="ticketId"
+           value="@Model.Ticket.Id" />
+
+    <div class="mb-3">
+        <label for="commentText" class="form-label">
+            Add progress comment
+        </label>
+
+        <textarea name="commentText"
+                  id="commentText"
+                  class="form-control"
+                  rows="4"
+                  maxlength="1000">@((ViewData.ModelState["commentText"]?.AttemptedValue) ?? "")</textarea>
+
+        @Html.ValidationMessage(
+            "commentText",
+            "",
+            new { @class = "text-danger" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Add Comment
+    </button>
+</form>
+
 <a asp-action="Index"
    class="btn btn-secondary">
     Back to Ticket Management

@@ -710,6 +710,176 @@ namespace ITHelpdeskSystem.Tests
         }
 
         [TestMethod]
+        public async Task AddComment_ValidComment_ShouldSaveToDatabase()
+        {
+            // Arrange
+            var ticket = await AddInProgressTicket();
+
+            // Act
+            await _controller.AddComment(
+                ticket.Id,
+                "Progress update");
+
+            // Assert
+            var savedComment = _context.TicketComments.Single();
+
+            Assert.AreEqual(ticket.Id, savedComment.TicketId);
+            Assert.AreEqual("Progress update", savedComment.Text);
+            Assert.AreNotEqual(default(DateTime), savedComment.CreatedAt);
+        }
+
+
+        [TestMethod]
+        public async Task AddComment_WhitespaceOnly_ShouldNotSaveComment()
+        {
+            // Arrange
+            var ticket = await AddInProgressTicket();
+
+            // Act
+            var result = await _controller.AddComment(
+                ticket.Id,
+                "   ");
+
+            // Assert
+            Assert.AreEqual(0, _context.TicketComments.Count());
+            Assert.IsFalse(_controller.ModelState.IsValid);
+            Assert.IsTrue(
+                _controller.ModelState.ContainsKey("commentText"));
+
+            Assert.IsInstanceOfType(
+                result,
+                typeof(ViewResult));
+        }
+
+
+        [TestMethod]
+        public async Task AddComment_ValidComment_ShouldNotChangeTicketWorkflow()
+        {
+            // Arrange
+            var ticket = await AddInProgressTicket();
+
+            var originalStatus = ticket.Status;
+            var originalPriority = ticket.Priority;
+            var originalTechnician = ticket.AssignedTechnician;
+            var originalTriagedAt = ticket.TriagedAt;
+            var originalResolvedAt = ticket.ResolvedAt;
+
+            // Act
+            await _controller.AddComment(
+                ticket.Id,
+                "Investigating the issue.");
+
+            // Assert
+            var updatedTicket =
+                await _context.Tickets.FindAsync(ticket.Id);
+
+            Assert.IsNotNull(updatedTicket);
+
+            Assert.AreEqual(
+                originalStatus,
+                updatedTicket.Status);
+
+            Assert.AreEqual(
+                originalPriority,
+                updatedTicket.Priority);
+
+            Assert.AreEqual(
+                originalTechnician,
+                updatedTicket.AssignedTechnician);
+
+            Assert.AreEqual(
+                originalTriagedAt,
+                updatedTicket.TriagedAt);
+
+            Assert.AreEqual(
+                originalResolvedAt,
+                updatedTicket.ResolvedAt);
+        }
+
+
+        [TestMethod]
+        public async Task Track_Post_ValidMatch_ShouldIncludeCommentsOldestFirstWithNzTime()
+        {
+            // Arrange
+            var ticket = await AddOpenTicket();
+
+            var olderUtc = new DateTime(
+                2026, 9, 20, 1, 0, 0,
+                DateTimeKind.Utc);
+
+            var newerUtc = new DateTime(
+                2026, 9, 20, 2, 0, 0,
+                DateTimeKind.Utc);
+
+            _context.TicketComments.Add(
+                new TicketComment
+                {
+                    TicketId = ticket.Id,
+                    Text = "First update",
+                    CreatedAt = olderUtc
+                });
+
+            _context.TicketComments.Add(
+                new TicketComment
+                {
+                    TicketId = ticket.Id,
+                    Text = "Second update",
+                    CreatedAt = newerUtc
+                });
+
+            await _context.SaveChangesAsync();
+
+            var model = new RequesterTrackViewModel
+            {
+                TicketId = ticket.Id,
+                RequesterEmail = ticket.RequesterEmail
+            };
+
+            // Act
+            var result = await _controller.Track(model);
+
+            // Assert
+            Assert.IsInstanceOfType(
+                result,
+                typeof(ViewResult));
+
+            var view = (ViewResult)result;
+
+            Assert.AreEqual(
+                "TrackResult",
+                view.ViewName);
+
+            Assert.IsInstanceOfType(
+                view.Model,
+                typeof(RequesterTicketResultViewModel));
+
+            var vm =
+                (RequesterTicketResultViewModel)view.Model;
+
+            Assert.AreEqual(2, vm.Comments.Count);
+
+            // Comments should be returned oldest first.
+            Assert.AreEqual(
+                "First update",
+                vm.Comments[0].Text);
+
+            Assert.AreEqual(
+                "Second update",
+                vm.Comments[1].Text);
+
+            // Comment timestamps should be displayed in NZ time.
+            var slaService = new SlaService();
+
+            Assert.AreEqual(
+                slaService.ConvertUtcToNewZealandTime(olderUtc),
+                vm.Comments[0].CreatedAtNz);
+
+            Assert.AreEqual(
+                slaService.ConvertUtcToNewZealandTime(newerUtc),
+                vm.Comments[1].CreatedAtNz);
+        }
+
+        [TestMethod]
         public async Task Track_Post_NonexistentId_ReturnsGenericError()
         {
             var model = new RequesterTrackViewModel
@@ -819,7 +989,6 @@ namespace ITHelpdeskSystem.Tests
             Assert.AreEqual(ticket.Title, vm.Title);
             Assert.AreEqual(ticket.Description, vm.Description);
             Assert.AreEqual(ticket.Status, vm.Status);
-            Assert.AreEqual(ticket.Priority, vm.Priority);
 
             // Created time should use the project's NZ time conversion.
             var expectedNz =

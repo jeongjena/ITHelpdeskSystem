@@ -139,63 +139,7 @@ namespace ITHelpdeskSystem.Controllers
                 return NotFound();
             }
 
-            var currentTime = DateTime.UtcNow;
-            
-            var viewModel = new TicketDetailsViewModel
-            {
-                Ticket = ticket,
-
-                // Convert stored UTC timestamps to New Zealand time for display.
-                CreatedAtNz =
-                    _slaService.ConvertUtcToNewZealandTime(ticket.CreatedAt),
-
-                TriagedAtNz =
-                    ticket.TriagedAt.HasValue
-                        ? _slaService.ConvertUtcToNewZealandTime(ticket.TriagedAt.Value)
-                        : null,
-
-                ResolvedAtNz =
-                    ticket.ResolvedAt.HasValue
-                        ? _slaService.ConvertUtcToNewZealandTime(ticket.ResolvedAt.Value)
-                        : null,
-
-                TriageDueAt = _slaService.CalculateDueDateFromUtc(
-                    ticket.CreatedAt,
-                    2),
-
-                TriageSlaStatus = _slaService.GetTriageSlaStatus(
-                    ticket,
-                    currentTime),
-
-                ResolutionSlaStatus = _slaService.GetResolutionSlaStatus(
-                    ticket,
-                    currentTime)
-            };
-
-            // Display progress comments from oldest to newest.
-            viewModel.Comments = ticket.Comments
-                .OrderBy(c => c.CreatedAt)
-                .Select(c => new TicketCommentViewModel
-                {
-                    Text = c.Text,
-                    CreatedAtNz =
-                        _slaService.ConvertUtcToNewZealandTime(c.CreatedAt)
-                })
-                .ToList();
-
-            // Calculate the resolution SLA due time after valid triage.
-            if (ticket.TriagedAt.HasValue &&
-                ticket.Priority != TicketPriority.Unassigned)
-            {
-                var resolutionHours =
-                    _slaService.GetResolutionTargetHours(
-                        ticket.Priority);
-
-                viewModel.ResolutionDueAt =
-                    _slaService.CalculateDueDateFromUtc(
-                        ticket.TriagedAt.Value,
-                        resolutionHours);
-            }
+            var viewModel = BuildTicketDetailsViewModel(ticket);
 
             return View(viewModel);
         }
@@ -373,6 +317,66 @@ namespace ITHelpdeskSystem.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // Builds the display model shared by the ticket details page.
+        private TicketDetailsViewModel BuildTicketDetailsViewModel(Ticket ticket)
+        {
+            var currentTime = DateTime.UtcNow;
+
+            var viewModel = new TicketDetailsViewModel
+            {
+                Ticket = ticket,
+
+                // Convert stored UTC timestamps to New Zealand time for display.
+                CreatedAtNz =
+                    _slaService.ConvertUtcToNewZealandTime(ticket.CreatedAt),
+
+                TriagedAtNz =
+                    ticket.TriagedAt.HasValue
+                        ? _slaService.ConvertUtcToNewZealandTime(ticket.TriagedAt.Value)
+                        : null,
+
+                ResolvedAtNz =
+                    ticket.ResolvedAt.HasValue
+                        ? _slaService.ConvertUtcToNewZealandTime(ticket.ResolvedAt.Value)
+                        : null,
+
+                TriageDueAt =
+                    _slaService.CalculateDueDateFromUtc(ticket.CreatedAt, 2),
+
+                TriageSlaStatus =
+                    _slaService.GetTriageSlaStatus(ticket, currentTime),
+
+                ResolutionSlaStatus =
+                    _slaService.GetResolutionSlaStatus(ticket, currentTime)
+            };
+
+            // Calculate the resolution SLA due time after valid triage.
+            if (ticket.TriagedAt.HasValue &&
+                ticket.Priority != TicketPriority.Unassigned)
+            {
+                var resolutionHours =
+                    _slaService.GetResolutionTargetHours(ticket.Priority);
+
+                viewModel.ResolutionDueAt =
+                    _slaService.CalculateDueDateFromUtc(
+                        ticket.TriagedAt.Value,
+                        resolutionHours);
+            }
+
+            // Display progress comments from oldest to newest.
+            viewModel.Comments = ticket.Comments
+                .OrderBy(c => c.CreatedAt)
+                .Select(c => new TicketCommentViewModel
+                {
+                    Text = c.Text,
+                    CreatedAtNz =
+                        _slaService.ConvertUtcToNewZealandTime(c.CreatedAt)
+                })
+                .ToList();
+
+            return viewModel;
         }
 
     }

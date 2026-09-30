@@ -6,4 +6,68 @@
 
 <h1>Dashboard</h1>
 
-<!-- Summary cards and overdue tickets section will be added in upcoming commits. -->
+<!-- Status summary cards -->
+<div class="row g-3 mb-4">
+    <div class="col-auto">
+        <div class="card text-center" style="min-width: 140px;">
+            <div class="card-body">
+                <h6 class="card-title">Open</h6>
+                <p class="fs-3 mb-0">@Model.OpenCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-auto">
+        <div class="card text-center" style="min-width: 140px;">
+            <div class="card-body">
+                <h6 class="card-title">In Progress</h6>
+                <p class="fs-3 mb-0">@Model.InProgressCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-auto">
+        <div class="card text-center" style="min-width: 140px;">
+            <div class="card-body">
+                <h6 class="card-title">Resolved</h6>
+                <p class="fs-3 mb-0">@Model.ResolvedCount</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Priority summary cards -->
+<div class="row g-3 mb-4">
+    <div class="col-auto">
+        <div class="card text-center" style="min-width: 140px;">
+            <div class="card-body">
+                <h6 class="card-title">High</h6>
+                <p class="fs-3 mb-0">@Model.HighPriorityCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-auto">
+        <div class="card text-center" style="min-width: 140px;">
+            <div class="card-body">
+                <h6 class="card-title">Medium</h6>
+                <p class="fs-3 mb-0">@Model.MediumPriorityCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-auto">
+        <div class="card text-center" style="min-width: 140px;">
+            <div class="card-body">
+                <h6 class="card-title">Low</h6>
+                <p class="fs-3 mb-0">@Model.LowPriorityCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-auto">
+        <div class="card text-center" style="min-width: 140px;">
+            <div class="card-body">
+                <h6 class="card-title">Unassigned</h6>
+                <p class="fs-3 mb-0">@Model.UnassignedPriorityCount</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Requires Attention section will be added in the next commit. -->

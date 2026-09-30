@@ -1,8 +1,10 @@
 ﻿using ITHelpdeskSystem.Data;
+using ITHelpdeskSystem.Models;
 using ITHelpdeskSystem.Services;
 using ITHelpdeskSystem.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ITHelpdeskSystem.Controllers
 {
@@ -23,9 +25,21 @@ namespace ITHelpdeskSystem.Controllers
 
         // Displays the staff dashboard.
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var viewModel = new DashboardViewModel();
+            var tickets = await _context.Tickets.ToListAsync();
+
+            var viewModel = new DashboardViewModel
+            {
+                OpenCount = tickets.Count(t => t.Status == TicketStatus.Open),
+                InProgressCount = tickets.Count(t => t.Status == TicketStatus.InProgress),
+                ResolvedCount = tickets.Count(t => t.Status == TicketStatus.Resolved),
+
+                HighPriorityCount = tickets.Count(t => t.Priority == TicketPriority.High),
+                MediumPriorityCount = tickets.Count(t => t.Priority == TicketPriority.Medium),
+                LowPriorityCount = tickets.Count(t => t.Priority == TicketPriority.Low),
+                UnassignedPriorityCount = tickets.Count(t => t.Priority == TicketPriority.Unassigned)
+            };
 
             return View(viewModel);
         }

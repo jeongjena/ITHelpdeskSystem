@@ -2,111 +2,150 @@
 
 @{
     ViewData["Title"] = "Dashboard";
+
+    // Maps ticket status to a Bootstrap color for consistent badges/accents.
+    string StatusColor(ITHelpdeskSystem.Models.TicketStatus status) => status switch
+    {
+        ITHelpdeskSystem.Models.TicketStatus.Open => "primary",
+        ITHelpdeskSystem.Models.TicketStatus.InProgress => "info",
+        ITHelpdeskSystem.Models.TicketStatus.Resolved => "success",
+        _ => "secondary"
+    };
+
+    // Maps ticket priority to a Bootstrap color for consistent badges/accents.
+    string PriorityColor(ITHelpdeskSystem.Models.TicketPriority priority) => priority switch
+    {
+        ITHelpdeskSystem.Models.TicketPriority.High => "danger",
+        ITHelpdeskSystem.Models.TicketPriority.Medium => "warning",
+        ITHelpdeskSystem.Models.TicketPriority.Low => "success",
+        _ => "secondary"
+    };
 }
 
-<h1>Dashboard</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-0">Dashboard</h1>
+        <p class="text-muted mb-0">Current ticket workload and items requiring attention</p>
+    </div>
+</div>
 
 <!-- Status summary cards -->
+<h6 class="text-uppercase text-muted mb-2" style="letter-spacing: 0.05em;">By Status</h6>
 <div class="row g-3 mb-4">
-    <div class="col-auto">
-        <div class="card text-center" style="min-width: 140px;">
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="card border-0 shadow-sm border-start border-4 border-primary h-100">
             <div class="card-body">
-                <h6 class="card-title">Open</h6>
-                <p class="fs-3 mb-0">@Model.OpenCount</p>
+                <div class="text-muted small">Open</div>
+                <div class="fs-2 fw-bold">@Model.OpenCount</div>
             </div>
         </div>
     </div>
-    <div class="col-auto">
-        <div class="card text-center" style="min-width: 140px;">
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="card border-0 shadow-sm border-start border-4 border-info h-100">
             <div class="card-body">
-                <h6 class="card-title">In Progress</h6>
-                <p class="fs-3 mb-0">@Model.InProgressCount</p>
+                <div class="text-muted small">In Progress</div>
+                <div class="fs-2 fw-bold">@Model.InProgressCount</div>
             </div>
         </div>
     </div>
-    <div class="col-auto">
-        <div class="card text-center" style="min-width: 140px;">
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="card border-0 shadow-sm border-start border-4 border-success h-100">
             <div class="card-body">
-                <h6 class="card-title">Resolved</h6>
-                <p class="fs-3 mb-0">@Model.ResolvedCount</p>
+                <div class="text-muted small">Resolved</div>
+                <div class="fs-2 fw-bold">@Model.ResolvedCount</div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Priority summary cards -->
+<h6 class="text-uppercase text-muted mb-2" style="letter-spacing: 0.05em;">By Priority</h6>
 <div class="row g-3 mb-4">
-    <div class="col-auto">
-        <div class="card text-center" style="min-width: 140px;">
+    <div class="col-6 col-md-3 col-lg-2">
+        <div class="card border-0 shadow-sm border-start border-4 border-danger h-100">
             <div class="card-body">
-                <h6 class="card-title">High</h6>
-                <p class="fs-3 mb-0">@Model.HighPriorityCount</p>
+                <div class="text-muted small">High</div>
+                <div class="fs-2 fw-bold">@Model.HighPriorityCount</div>
             </div>
         </div>
     </div>
-    <div class="col-auto">
-        <div class="card text-center" style="min-width: 140px;">
+    <div class="col-6 col-md-3 col-lg-2">
+        <div class="card border-0 shadow-sm border-start border-4 border-warning h-100">
             <div class="card-body">
-                <h6 class="card-title">Medium</h6>
-                <p class="fs-3 mb-0">@Model.MediumPriorityCount</p>
+                <div class="text-muted small">Medium</div>
+                <div class="fs-2 fw-bold">@Model.MediumPriorityCount</div>
             </div>
         </div>
     </div>
-    <div class="col-auto">
-        <div class="card text-center" style="min-width: 140px;">
+    <div class="col-6 col-md-3 col-lg-2">
+        <div class="card border-0 shadow-sm border-start border-4 border-success h-100">
             <div class="card-body">
-                <h6 class="card-title">Low</h6>
-                <p class="fs-3 mb-0">@Model.LowPriorityCount</p>
+                <div class="text-muted small">Low</div>
+                <div class="fs-2 fw-bold">@Model.LowPriorityCount</div>
             </div>
         </div>
     </div>
-    <div class="col-auto">
-        <div class="card text-center" style="min-width: 140px;">
+    <div class="col-6 col-md-3 col-lg-2">
+        <div class="card border-0 shadow-sm border-start border-4 border-secondary h-100">
             <div class="card-body">
-                <h6 class="card-title">Unassigned</h6>
-                <p class="fs-3 mb-0">@Model.UnassignedPriorityCount</p>
+                <div class="text-muted small">Unassigned</div>
+                <div class="fs-2 fw-bold">@Model.UnassignedPriorityCount</div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Requires Attention: tickets overdue for triage or resolution -->
-<h4 class="mb-3">Requires Attention</h4>
+<div class="d-flex align-items-center mb-3">
+    <h5 class="mb-0">Requires Attention</h5>
+    @if (Model.OverdueTickets.Any())
+    {
+        <span class="badge bg-danger ms-2">@Model.OverdueTickets.Count overdue</span>
+    }
+</div>
 
 @if (!Model.OverdueTickets.Any())
 {
-    <p class="text-muted">No overdue tickets.</p>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center text-muted py-4">
+            No overdue tickets.
+        </div>
+    </div>
 }
 else
 {
-    <table class="table table-bordered table-hover">
-        <thead>
-            <tr>
-                <th>Ticket ID</th>
-                <th>Title</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Assigned Technician</th>
-                <th>Overdue SLA</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var ticket in Model.OverdueTickets)
-            {
-                <tr>
-                    <td>@ticket.TicketId</td>
-                    <td>@ticket.Title</td>
-                    <td>@ticket.Status</td>
-                    <td>@ticket.Priority</td>
-                    <td>@(ticket.AssignedTechnician ?? "-")</td>
-                    <td><span class="text-danger fw-bold">@ticket.OverdueSla</span></td>
-                    <td>
-                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.TicketId"
-                           class="btn btn-sm btn-outline-primary">View</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Assigned Technician</th>
+                        <th>Overdue SLA</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ticket in Model.OverdueTickets)
+                    {
+                        <tr>
+                            <td class="text-muted">#@ticket.TicketId</td>
+                            <td>@ticket.Title</td>
+                            <td><span class="badge bg-@StatusColor(ticket.Status)">@ticket.Status</span></td>
+                            <td><span class="badge bg-@PriorityColor(ticket.Priority)">@ticket.Priority</span></td>
+                            <td>@(ticket.AssignedTechnician ?? "—")</td>
+                            <td><span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle">@ticket.OverdueSla</span></td>
+                            <td class="text-end">
+                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.TicketId"
+                                   class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }

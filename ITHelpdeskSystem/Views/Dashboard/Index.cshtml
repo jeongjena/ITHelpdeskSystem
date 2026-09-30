@@ -70,4 +70,43 @@
     </div>
 </div>
 
-<!-- Requires Attention section will be added in the next commit. -->
+<!-- Requires Attention: tickets overdue for triage or resolution -->
+<h4 class="mb-3">Requires Attention</h4>
+
+@if (!Model.OverdueTickets.Any())
+{
+    <p class="text-muted">No overdue tickets.</p>
+}
+else
+{
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Ticket ID</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Assigned Technician</th>
+                <th>Overdue SLA</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ticket in Model.OverdueTickets)
+            {
+                <tr>
+                    <td>@ticket.TicketId</td>
+                    <td>@ticket.Title</td>
+                    <td>@ticket.Status</td>
+                    <td>@ticket.Priority</td>
+                    <td>@(ticket.AssignedTechnician ?? "-")</td>
+                    <td><span class="text-danger fw-bold">@ticket.OverdueSla</span></td>
+                    <td>
+                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.TicketId"
+                           class="btn btn-sm btn-outline-primary">View</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

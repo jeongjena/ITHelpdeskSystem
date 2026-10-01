@@ -125,7 +125,7 @@ else
                         <th>Priority</th>
                         <th>Assigned Technician</th>
                         <th>Overdue SLA</th>
-                        <th></th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -138,9 +138,36 @@ else
                             <td><span class="badge bg-@PriorityColor(ticket.Priority)">@ticket.Priority</span></td>
                             <td>@(ticket.AssignedTechnician ?? "—")</td>
                             <td><span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle">@ticket.OverdueSla</span></td>
-                            <td class="text-end">
-                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.TicketId"
-                                   class="btn btn-sm btn-outline-primary">View</a>
+                            <td class="text-end text-nowrap">
+                                <div class="d-inline-flex gap-2">
+                                    <a asp-controller="Tickets"
+                                       asp-action="Details"
+                                       asp-route-id="@ticket.TicketId"
+                                       class="btn btn-sm btn-outline-secondary">
+                                        View
+                                    </a>
+
+                                    @if (ticket.OverdueSla == "Triage")
+                                    {
+                                        <a asp-controller="Tickets"
+                                           asp-action="Triage"
+                                           asp-route-id="@ticket.TicketId"
+                                           class="btn btn-sm btn-primary"
+                                           style="min-width: 70px;">
+                                            Triage
+                                        </a>
+                                    }
+                                    else if (ticket.OverdueSla == "Resolution")
+                                    {
+                                        <a asp-controller="Tickets"
+                                           asp-action="Resolve"
+                                           asp-route-id="@ticket.TicketId"
+                                           class="btn btn-sm btn-primary"
+                                           style="min-width: 70px;">
+                                            Resolve
+                                        </a>
+                                    }
+                                </div>
                             </td>
                         </tr>
                     }

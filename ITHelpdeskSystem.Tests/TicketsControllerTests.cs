@@ -898,9 +898,15 @@ namespace ITHelpdeskSystem.Tests
             Assert.AreSame(model, view.Model);
             Assert.IsFalse(_controller.ModelState.IsValid);
 
-            var errors = _controller.ModelState[string.Empty].Errors;
+            Assert.IsTrue(
+                _controller.ModelState.TryGetValue(string.Empty, out var entry));
+
+            var errors = entry.Errors;
+
             Assert.IsTrue(errors.Any());
-            Assert.AreEqual("No matching ticket found.", errors[0].ErrorMessage);
+            Assert.AreEqual(
+                "No matching ticket found.",
+                errors[0].ErrorMessage);
         }
 
         [TestMethod]
@@ -924,9 +930,15 @@ namespace ITHelpdeskSystem.Tests
             Assert.AreSame(model, view.Model);
             Assert.IsFalse(_controller.ModelState.IsValid);
 
-            var errors = _controller.ModelState[string.Empty].Errors;
+            Assert.IsTrue(
+                _controller.ModelState.TryGetValue(string.Empty, out var entry));
+
+            var errors = entry.Errors;
+
             Assert.IsTrue(errors.Any());
-            Assert.AreEqual("No matching ticket found.", errors[0].ErrorMessage);
+            Assert.AreEqual(
+                "No matching ticket found.",
+                errors[0].ErrorMessage);
         }
 
         [TestMethod]

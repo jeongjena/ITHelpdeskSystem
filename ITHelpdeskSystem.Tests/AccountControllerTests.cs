@@ -99,7 +99,7 @@ namespace ITHelpdeskSystem.Tests
 
             var result = await controller.Login(model);
 
-            // Should return the login view with the same model.
+            // Should return the Login view with the same model.
             Assert.IsInstanceOfType(result, typeof(ViewResult));
 
             var view = (ViewResult)result;
@@ -107,9 +107,15 @@ namespace ITHelpdeskSystem.Tests
 
             // Controller should have added a model-level error for invalid credentials.
             Assert.IsFalse(controller.ModelState.IsValid);
-            Assert.IsTrue(controller.ModelState.ContainsKey(string.Empty));
-            var errors = controller.ModelState[string.Empty].Errors;
-            Assert.IsTrue(errors.Any(e => e.ErrorMessage.Contains("Invalid username or password")));
+
+            Assert.IsTrue(
+                controller.ModelState.TryGetValue(string.Empty, out var entry));
+
+            var errors = entry.Errors;
+
+            Assert.IsTrue(
+                errors.Any(e =>
+                    e.ErrorMessage.Contains("Invalid username or password")));
         }
     }
 }

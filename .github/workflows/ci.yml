@@ -39,10 +39,20 @@ jobs:
       - name: Build
         run: dotnet build ITHelpdeskSystem.slnx --no-restore --configuration Release
 
-        # Runs the full MSTest suite (currently 62 tests) against the build.
-      # no-build avoids rebuilding since the Build step already produced
-      # the output. If any test fails, this step fails and the workflow
-      # shows a red X on the commit; if all pass, it shows a green check.
+      # Runs the full MSTest suite against the Release build.
+      # If any test fails, the workflow fails and the commit shows a red X.
 
       - name: Run tests
         run: dotnet test ITHelpdeskSystem.slnx --no-build --configuration Release --verbosity normal
+
+      # Creates a deployable version of the web application only after
+      # the build and automated tests have completed successfully.
+      - name: Publish application
+        run: dotnet publish ITHelpdeskSystem/ITHelpdeskSystem.csproj --configuration Release --no-build --output ./publish
+
+      # Stores the published application as a downloadable workflow artifact.
+      - name: Upload published application
+        uses: actions/upload-artifact@v4
+        with:
+          name: ithelpdesk-published-app
+          path: ./publish

@@ -1,4 +1,4 @@
-using ITHelpdeskSystem.Models;
+using ITHelpdeskSystem.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 

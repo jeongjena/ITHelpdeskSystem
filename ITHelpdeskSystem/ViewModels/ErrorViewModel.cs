@@ -1,4 +1,4 @@
-namespace ITHelpdeskSystem.Models
+namespace ITHelpdeskSystem.ViewModels
 {
     public class ErrorViewModel
     {

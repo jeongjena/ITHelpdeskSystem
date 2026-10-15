@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+	<DataCollectionRunSettings>
+		<DataCollectors>
+			<DataCollector friendlyName="Code Coverage">
+				<Configuration>
+					<CodeCoverage>
+
+						<!-- Exclude test assemblies -->
+						<ModulePaths>
+							<Exclude>
+								<ModulePath>.*ITHelpdeskSystem\.Tests\.dll$</ModulePath>
+							</Exclude>
+						</ModulePaths>
+
+						<!-- Exclude startup and generated files -->
+						<Sources>
+							<Exclude>
+								<Source>.*[/\\]Program\.cs$</Source>
+								<Source>.*[/\\]Migrations[/\\].*\.cs$</Source>
+								<Source>.*[/\\]obj[/\\].*\.cs$</Source>
+							</Exclude>
+						</Sources>
+
+						<!-- Exclude Razor-generated methods -->
+						<Functions>
+							<Exclude>
+								<Function>^AspNetCoreGeneratedDocument\..*</Function>
+							</Exclude>
+						</Functions>
+
+						<!-- Exclude compiler-generated code -->
+						<Attributes>
+							<Exclude>
+								<Attribute>^System\.CodeDom\.Compiler\.GeneratedCodeAttribute$</Attribute>
+								<Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
+							</Exclude>
+						</Attributes>
+
+					</CodeCoverage>
+				</Configuration>
+			</DataCollector>
+		</DataCollectors>
+	</DataCollectionRunSettings>
+</RunSettings>

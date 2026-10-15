@@ -1,9 +1,11 @@
 using ITHelpdeskSystem.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ITHelpdeskSystem.Controllers
 {
+    [ExcludeFromCodeCoverage]
     public class HomeController : Controller
     {
         public IActionResult Index()
